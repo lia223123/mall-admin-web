@@ -115,6 +115,7 @@ import {editLecturers, getLecturers} from "../../../api/studentsInfo/lecturers";
 import {formatSex} from "../../../utils";
 import {DownLoadCos} from "../../../utils/cos";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
+import {Message} from "element-ui";
 
 export default {
   name: "detail",
@@ -164,7 +165,11 @@ export default {
         DownLoadCos(this.Secret,this.user.LE_idCard01).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
-        )
+        ).catch(()=> {
+          Message.warning({
+            message: '该讲师未上传职业资格证'
+          })
+        })
       })
     },
     DDiploma(){
@@ -179,9 +184,12 @@ export default {
         DownLoadCos(this.Secret,this.user.LE_gc).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
-        )
+        ).catch(()=> {
+          Message.warning({
+            message: '该讲师未上传毕业证'
+          })
+        })
       })
-
     },
     DOccupation(){
       this.$confirm('是否下载讲师编号为' + this.user.LEid + "的讲师职业资格证？","警告", {
@@ -195,9 +203,12 @@ export default {
         DownLoadCos(this.Secret,this.user.LE_pqc).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
-        )
+        ).catch(()=> {
+          Message.warning({
+            message: '该讲师未上传职业资格证'
+          })
+        })
       })
-
     },
     DAgreement(){
       this.$confirm('是否下载讲师编号为' + this.user.LEid + "的讲师协议书？","警告", {
@@ -211,9 +222,12 @@ export default {
         DownLoadCos(this.Secret,this.user.LE_contents).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
-        )
+        ).catch(()=>{
+          Message.warning({
+            message: '该讲师未上传协议书'
+          })
       })
-
+      })
     },
     //保存
     submit(){

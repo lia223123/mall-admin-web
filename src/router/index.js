@@ -48,6 +48,19 @@ export const constantRouterMap = [
     ]
   },
   {
+    path: '/banji',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/banji/:id(\\d+)',
+        name: 'banjiDetail',
+        component: ()=> import('@/views/business/banji/detail'),
+        meta: {title: '班级信息详情', icon : ''}
+      }
+    ]
+  },
+  {
     path: '',
     component: Layout,
     redirect: '/home',

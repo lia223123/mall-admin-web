@@ -123,3 +123,16 @@ export function banjiType(num){
     case 2: return "社招班"
   }
 }
+//证书等级
+export function level(num){
+  switch (num) {
+    case '1': return "无（合格证）"
+    case '2': return "专项能力证"
+    case '3': return "初级"
+    case '4': return "中级"
+    case '5': return "高级"
+    case '6': return "技师"
+    case '7': return "高级技师"
+    default: return "无"
+  }
+}

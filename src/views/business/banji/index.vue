@@ -24,7 +24,7 @@
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="班级编号" align="center" prop="BClass_code">
         <template slot-scope="scope">
-          <router-link :to="'/lecturesDetail/' + scope.row.id" class="link-type">
+          <router-link :to="'/banji/' + scope.row.id" class="link-type">
             <el-tooltip content="点击查看详细信息" placement="top">
               <span style="color: #1e6abc">{{ scope.row.BClass_code }}</span>
             </el-tooltip>
@@ -32,11 +32,15 @@
         </template>
       </el-table-column>
         <el-table-column label="班级名称" align="center" prop="BClass_name"/>
+        <el-table-column label="人社局编号" align="center" prop="BR_code"/>
       <el-table-column label="开班地" align="center" prop="BClass_address"/>
       <el-table-column label="部门" align="center" prop="BDepartment"/>
       <el-table-column label="开班时间·" align="center" prop="BCStartTime"/>
       <el-table-column label="开班结束时间" align="center" prop="BCEndTime"/>
-      <el-table-column label="班主任" align="center" prop="BHead_teacher"/>
+      <el-table-column label="班主任" align="center" prop="BHead_teacher" />
+      <el-table-column label="讲师" align="center" prop="BLecturer"/>
+      <el-table-column label="工种类型" align="center" prop="BOt_name"/>
+      <el-table-column label="证书等级" align="center" prop="BLev" :formatter="_BLev"/>
       <el-table-column label="班级性质" align="center" prop="BClass_type" :formatter="_BClass_type"/>
       <el-table-column label="是否申请费用" align="center" prop="Bis_fee_applied" :formatter="_Bis_fee_applied"/>
       <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_fee_applied"/>
@@ -68,12 +72,15 @@
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
       <el-steps :active="active" finish-status="success">
         <el-step title="步骤 1" icon="el-icon-edit"></el-step>
-        <el-step title="步骤 2" icon="el-icon-upload"></el-step>
+        <el-step title="步骤 2" icon="el-icon-s-marketing"></el-step>
         <el-step title="步骤 3" icon="el-icon-upload"></el-step>
       </el-steps>
-      <el-form ref="form" :model="form" label-width="110px" v-if="active === 1">
+      <el-form ref="form" :model="form" :rules="rules" label-width="110px" v-if="active === 1">
         <el-form-item label="班级编号" prop="BClass_code">
           <el-input v-model="form.BClass_code" placeholder="请输入班级编号" />
+        </el-form-item>
+        <el-form-item label="人社局编号" prop="BR_code">
+          <el-input v-model="form.BR_code" placeholder="请输入班级编号" />
         </el-form-item>
         <el-form-item label="班级名称" prop="BClass_name">
           <el-input v-model="form.BClass_name" placeholder="请输入班级名称" maxlength="18"/>
@@ -86,11 +93,11 @@
         </el-form-item>
         <el-form-item label="开课时间" prop="BCEndTime">
           <el-col :span="11">
-            <el-date-picker type="date" placeholder="选择日期" v-model="form.BCStartTime" style="width: 90%;"></el-date-picker>
+            <el-date-picker type="date" value-format="yyyy-MM-dd" format="yyyy-MM-dd" placeholder="选择日期" v-model="form.BCStartTime" style="width: 90%;"></el-date-picker>
           </el-col>
           <el-col class="line" :span="2">=></el-col>
           <el-col :span="11">
-            <el-date-picker type="date" placeholder="选择日期" v-model="form.BCEndTime" style="width: 100%;"></el-date-picker>
+            <el-date-picker type="date" placeholder="选择日期" value-format="yyyy-MM-dd" format="yyyy-MM-dd" v-model="form.BCEndTime" style="width: 100%;"></el-date-picker>
           </el-col>
         </el-form-item>
         <el-form-item label="班级性质" prop="BClass_type">
@@ -101,14 +108,24 @@
         <el-form-item label="班主任" prop="BHead_teacher">
           <el-input v-model="form.BHead_teacher" placeholder="请输入班主任"/>
         </el-form-item>
+        <el-form-item label="工种类型" prop="BOt_name">
+          <el-input v-model="form.BOt_name" placeholder="请输入工种类型"/>
+        </el-form-item>
+        <el-form-item label="证书等级" prop="BLev">
+          <el-select v-model="form.BLev" placeholder="请选择证书等级">
+            <el-option v-for="item in this.level" :value="item.value" :label="item.name" :key="item.value"/>
+          </el-select>
+        </el-form-item>
         <el-form-item label="讲课老师" prop="BLecturer">
-          <el-input v-model="form.BLecturer" placeholder="请输入讲课"/>
+          <el-select v-model="form.BLecturer" filterable placeholder="请输入讲课">
+            <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name"/>
+          </el-select>
         </el-form-item>
         <el-form-item label="工作人员" prop="BStaff">
           <el-input v-model="form.BStaff" placeholder="请输入工作人员"/>
         </el-form-item>
       </el-form>
-      <el-form ref="form" :model="form"  v-if="active === 2" :inline="true">
+      <el-form ref="form" :model="form" :rules="rules"  v-if="active === 2"  label-width="150px">
         <el-form-item label="管理费用" prop="BManagement_fee">
           <el-input v-model="form.BManagement_fee" placeholder="请输入管理费用"/>
         </el-form-item>
@@ -130,30 +147,32 @@
         <el-form-item label="招生提成标准" prop="BAdmissions_commission">
           <el-input v-model="form.BAdmissions_commission" placeholder="请输入招生提成标准"/>
         </el-form-item>
-        <el-form-item label="合办单位" prop="Bco_organizer">
-          <el-input v-model="form.Bco_organizer" placeholder="请输入合办单位"/>
+        <el-form-item label="合办单位" prop="BCo_organizer">
+          <el-input v-model="form.BCo_organizer" placeholder="请输入合办单位"/>
         </el-form-item>
         <el-form-item label="合办单位分成标准" prop="Bco_organizer_commission">
           <el-input v-model="form.Bco_organizer_commission" placeholder="请输入合办单位分成标准"/>
         </el-form-item>
-        <el-form-item label="合办单位分成标准" prop="Bco_organizer_commission">
-          <el-input v-model="form.Bco_organizer_commission" placeholder="请输入合办单位分成标准"/>
+        <el-form-item label="是否已申请政府补贴" prop="Bis_fee_applied">
+          <el-select placeholder="请选择" v-model="form.Bis_fee_applied">
+            <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
+          </el-select>
         </el-form-item>
-        <el-form-item>
-          <el-select placeholder="请选择">
-
+        <el-form-item label="费用是否到账" prop="Bis_closed">
+          <el-select placeholder="请选择" v-model="form.Bis_closed">
+            <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
           </el-select>
         </el-form-item>
       </el-form>
       <el-form ref="form" :model="form" :rules="rules" label-width="110px" v-if="active === 3" >
-        <el-form-item label="身份证反面" prop="LE_idCard02">
+        <el-form-item label="班级集体照" prop="BClass_photo">
           <el-upload
             action=""
-            ref="LE_idCard02"
+            ref="BClass_photo"
             class="upload-demo"
             list-type="picture"
             :limit="1"
-            :disabled="idcard02"
+            :disabled="BClass_photo"
             :auto-upload="false"
             :http-request="handleBeforeCard01"
             :on-preview="handlePictureCardPreview">
@@ -177,11 +196,11 @@
 
 <script>
 import {addLecturers, deleteLecturers, getLecturers, listLecturers} from "../../../api/studentsInfo/lecturers";
-import {banjiType, formatSex, isNot} from "../../../utils";
+import {banjiType, formatSex, isNot, level} from "../../../utils";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {DeleteCos, LEupload} from "../../../utils/cos";
 import {Message} from "element-ui";
-import {deleteBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
+import {addBanJi, deleteBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
 
 export default {
   name: "index",
@@ -205,10 +224,7 @@ export default {
       //预览路径
       dialogImageUrl: '',
       //是否禁用
-      idcard02: false,
-      gc: false,
-      pqc: false,
-      contents: false,
+      BClass_photo: false,
       //查询参数
       query:[
         {name:'班级编号',id: 'BClass_code'},
@@ -245,8 +261,50 @@ export default {
         BStaff: [
           {required: true, message: "工作人员不能为空", trigger: "blur"}
         ],
-        LE_idCard02: [
+        BClass_photo: [
           {required: true, message: "班级集体照未上传", trigger: "blur"}
+        ],
+        BLiving_fee:[
+          {required: true, message: "食宿标准不能为空", trigger: "blur"}
+        ],
+        BGov_fee:[
+          {required: true, message: "政府补贴费用不能为空", trigger: "blur"}
+        ],
+        BCommission:[
+          {required: true, message: "提成标准不能为空", trigger: "blur"}
+        ],
+        BClass_pay:[
+          {required: true, message: "课酬标准不能为空", trigger: "blur"}
+        ],
+        BClass_hour:[
+          {required: true, message: "课时标准不能为空", trigger: "blur"}
+        ],
+        BAdmissions_commission:[
+          {required: true, message: "招生提成不能为空", trigger: "blur"}
+        ],
+        Bco_organizer:[
+          {required: true, message: "合办单位不能为空", trigger: "blur"}
+        ],
+        Bco_organizer_commission:[
+          {required: true, message: "合办单位分成不能为空", trigger: "blur"}
+        ],
+        Bis_fee_applied:[
+          {required: true, message: "是否已申请政府补贴不能为空", trigger: "blur"}
+        ],
+        BManagement_fee:[
+          {required: true, message: "管理费用不能为空", trigger: "blur"}
+        ],
+        Bis_closed:[
+          {required: true, message: "费用是否到账不能为空", trigger: "blur"}
+        ],
+        BLev: [
+          {required: true, message: "证书等级不能为空", trigger: "blur"}
+        ],
+        BOt_name: [
+          {required: true, message: "工种类型不能为空", trigger: "blur"}
+        ],
+        BR_code: [
+          {required: true, message: "人社局编号 不能为空", trigger: "blur"}
         ]
       },
       Secret: {},
@@ -254,10 +312,28 @@ export default {
         {name: "政府补贴班", value: 1},
         {name: '社招班', value: 2}
       ],
+      isNot: [
+        {name: '是',value: 1},
+        {name: '否',value: 2}
+      ],
+      level: [
+        {name: '无（合格证）', value: '1'},
+        {name: '专项能力证', value: '2'},
+        {name: '初级', value: '3'},
+        {name: '中级', value: '4'},
+        {name: '高级', value: '5'},
+        {name: '技师', value: '6'},
+        {name: '高级技师', value: '7'},
+      ],
+      //需要的参数
+      lecturers: {}
     }
   },
   created() {
     this.getList()
+    listLecturers().then(res =>{
+      this.lecturers = res.data.results
+    })
   },
   methods:{
     getList(){
@@ -270,6 +346,7 @@ export default {
     reset(){
       this.form = {
         id: undefined,
+        BR_code: undefined,
         BClass_code: undefined,
         BCEndTime: undefined,
         BClass_name: undefined,
@@ -289,17 +366,13 @@ export default {
         BClass_pay: undefined,
         BClass_hour: undefined,
         BAdmissions_commission: undefined,
-        Bco_organizer: undefined,
+        BCo_organizer: undefined,
         Bco_organizer_commission: undefined,
         Bis_fee_applied: undefined,
         Bis_closed: undefined,
         BClass_photo: undefined,
       };
-      this.contents = false
-      this.gc = false
-      this.contents = false
-      this.idcard01 = false
-      this.idcard02 = false
+      this.BClass_photo = false
       this.active = 1;
       this.$refs['form'].resetFields();
     },
@@ -312,7 +385,7 @@ export default {
     //新增数据
     handleAdd(){
       this.open = true;
-      this.title = "新增讲师";
+      this.title = "新增班级";
     },
     //删除数据
     handleDelete(row){
@@ -361,7 +434,7 @@ export default {
     submitForm(){
       this.$refs["form"].validate(valid => {
         if(valid){
-          addLecturers(this.form).then(response => {
+          addBanJi(this.form).then(response => {
             this.$message({
               message: "新增成功",
               type: 'success'
@@ -371,7 +444,7 @@ export default {
             this.reset();
           }).catch(() =>{
             this.$message({
-              message: '该讲师身份证或编号已存在或身份证与电话号码格式不正确，请修改后再确定',
+              message: '该班级编号已存在，请修改后再确定',
               type: 'warning'
             })
           });
@@ -380,8 +453,21 @@ export default {
     },
     //关闭弹窗
     handleClose(done){
-      done()
-      this.reset()
+      this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        done()
+        this.resetFW(this.form)
+        this.reset()
+        this.open = false
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
     },
     //查询
     handleFind(){
@@ -438,106 +524,25 @@ export default {
     _BClass_type(row){
       return banjiType(row.BClass_type)
     },
-    //提交之前图片上传服务器
-    handleBeforeCard(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'LETeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.LE_idCard01 = res
-          this.idcard01 = true
-          this.$message({
-            message: '上传身份证正面成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传身份证正面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
-        })
-      })
+    _BLev(row){
+      return level(row.BLev)
     },
+    //提交之前图片上传服务器
     handleBeforeCard01(file){
       getLeFile().then(response =>{
         let Secret = response.data
-        let key = 'LETeacher/'
+        let key = 'BanJi/'
         LEupload(Secret,file.file,key).then(res=>{
-          this.form.LE_idCard02 = res
+          this.form.BClass_photo = res
           this.$message({
-            message: '上传身份证反面成功',
+            message: '上传班级照成功',
             type: 'success',
             showClose: true
           })
-          this.idcard02 = true
+          this.BClass_photo = true
         }).catch(error=>{
           this.$message({
-            message: '上传身份证反面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
-        })
-      })
-    },
-    handleBeforeGc(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'LETeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.LE_gc = res
-          this.gc = true
-          this.$message({
-            message: '上传毕业证成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传身毕业证失败，请重新上传'+ error,
-            type: 'warning'
-          })
-        })
-      })
-    },
-    handleBeforepqc(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'LETeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          console.log(res);
-          this.form.LE_pqc = res
-          this.pqc = true
-          this.$message({
-            message: '上传资格证成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传资格证失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
-        })
-      })
-    },
-    handleBeforeCo(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'LETeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.LE_contents = res
-          this.contents = true
-          this.$message({
-            message: '上传协议成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传协议失败，请重新上传'+ error,
+            message: '上传班级照失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
@@ -551,8 +556,8 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        if (this.idcard02 === false){
-          this.$refs.LE_idCard02.submit()
+        if (this.BClass_photo === false){
+          this.$refs.BClass_photo.submit()
         }
 
       }).catch(() => {
@@ -564,8 +569,8 @@ export default {
     },
     //判断上传
     pdUpload(){
-      if (this.idcard02 === true){
-        Message.warning("身份证反面已上传")
+      if (this.BClass_photo === true){
+        Message.warning("班级集体照已上传")
       }
     }
   }
