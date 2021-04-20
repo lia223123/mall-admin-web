@@ -9,17 +9,6 @@
       </el-input>
       <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
     </div>
-    <el-row :gutter="10" style="margin-top: 15px">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-        >新增</el-button>
-      </el-col>
-    </el-row>
     <el-table v-loading="loading" :data="dataList" >
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="班级编号" align="center" prop="BClass_code">
@@ -37,7 +26,7 @@
       <el-table-column label="部门" align="center" prop="BDepartment"/>
       <el-table-column label="开班时间·" align="center" prop="BCStartTime"/>
       <el-table-column label="开班结束时间" align="center" prop="BCEndTime"/>
-      <el-table-column label="班主任" align="center" prop="BHead_teacher" />
+      <el-table-column label="班主任" align="center" prop="BHead_teacher"/>
       <el-table-column label="讲师" align="center" prop="BLecturer"/>
       <el-table-column label="工种类型" align="center" prop="BOt_name"/>
       <el-table-column label="证书等级" align="center" prop="BLev" :formatter="_BLev"/>
@@ -67,130 +56,6 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
-      <el-steps :active="active" finish-status="success">
-        <el-step title="步骤 1" icon="el-icon-edit"></el-step>
-        <el-step title="步骤 2" icon="el-icon-s-marketing"></el-step>
-        <el-step title="步骤 3" icon="el-icon-upload"></el-step>
-      </el-steps>
-      <el-form ref="form" :model="form" :rules="rules" label-width="110px" v-if="active === 1">
-        <el-form-item label="班级编号" prop="BClass_code">
-          <el-input v-model="form.BClass_code" placeholder="请输入班级编号" />
-        </el-form-item>
-        <el-form-item label="人社局编号" prop="BR_code">
-          <el-input v-model="form.BR_code" placeholder="请输入班级编号" />
-        </el-form-item>
-        <el-form-item label="班级名称" prop="BClass_name">
-          <el-input v-model="form.BClass_name" placeholder="请输入班级名称" maxlength="18"/>
-        </el-form-item>
-        <el-form-item label="开班地" prop="BClass_address">
-          <el-input v-model="form.BClass_address" placeholder="请输入开班地" />
-        </el-form-item>
-        <el-form-item label="开班部门" prop="BDepartment">
-          <el-input v-model="form.BDepartment" placeholder="请输入开班部门" />
-        </el-form-item>
-        <el-form-item label="开课时间" prop="BCEndTime">
-          <el-col :span="11">
-            <el-date-picker type="date" value-format="yyyy-MM-dd" format="yyyy-MM-dd" placeholder="选择日期" v-model="form.BCStartTime" style="width: 90%;"></el-date-picker>
-          </el-col>
-          <el-col class="line" :span="2">=></el-col>
-          <el-col :span="11">
-            <el-date-picker type="date" placeholder="选择日期" value-format="yyyy-MM-dd" format="yyyy-MM-dd" v-model="form.BCEndTime" style="width: 100%;"></el-date-picker>
-          </el-col>
-        </el-form-item>
-        <el-form-item label="班级性质" prop="BClass_type">
-          <el-select v-model="form.BClass_type" placeholder="请选择班级性质">
-            <el-option v-for="item in this.BType" :value="item.value" :label="item.name" :key="item.value"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="班主任" prop="BHead_teacher">
-          <el-input v-model="form.BHead_teacher" placeholder="请输入班主任"/>
-        </el-form-item>
-        <el-form-item label="工种类型" prop="BOt_name">
-          <el-input v-model="form.BOt_name" placeholder="请输入工种类型"/>
-        </el-form-item>
-        <el-form-item label="证书等级" prop="BLev">
-          <el-select v-model="form.BLev" placeholder="请选择证书等级">
-            <el-option v-for="item in this.level" :value="item.value" :label="item.name" :key="item.value"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="讲课老师" prop="BLecturer">
-          <el-select v-model="form.BLecturer" filterable placeholder="请输入讲课">
-            <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="工作人员" prop="BStaff">
-          <el-input v-model="form.BStaff" placeholder="请输入工作人员"/>
-        </el-form-item>
-      </el-form>
-      <el-form ref="form" :model="form" :rules="rules"  v-if="active === 2"  label-width="150px">
-        <el-form-item label="管理费用" prop="BManagement_fee">
-          <el-input v-model="form.BManagement_fee" placeholder="请输入管理费用"/>
-        </el-form-item>
-        <el-form-item label="食宿标准" prop="BLiving_fee">
-          <el-input v-model="form.BLiving_fee" placeholder="请输入食宿标准"/>
-        </el-form-item>
-        <el-form-item label="政府补贴费用" prop="BGov_fee">
-          <el-input v-model="form.BGov_fee" placeholder="请输入政府补贴费用"/>
-        </el-form-item>
-        <el-form-item label="提成标准" prop="BCommission">
-          <el-input v-model="form.BCommission" placeholder="请输入提成标准"/>
-        </el-form-item>
-        <el-form-item label="课酬标准" prop="BClass_pay">
-          <el-input v-model="form.BClass_pay" placeholder="请输入课酬标准"/>
-        </el-form-item>
-        <el-form-item label="课时标准" prop="BClass_hour">
-          <el-input v-model="form.BClass_hour" placeholder="请输入课时标准"/>
-        </el-form-item>
-        <el-form-item label="招生提成标准" prop="BAdmissions_commission">
-          <el-input v-model="form.BAdmissions_commission" placeholder="请输入招生提成标准"/>
-        </el-form-item>
-        <el-form-item label="合办单位" prop="BCo_organizer">
-          <el-input v-model="form.BCo_organizer" placeholder="请输入合办单位"/>
-        </el-form-item>
-        <el-form-item label="合办单位分成标准" prop="Bco_organizer_commission">
-          <el-input v-model="form.Bco_organizer_commission" placeholder="请输入合办单位分成标准"/>
-        </el-form-item>
-        <el-form-item label="是否已申请政府补贴" prop="Bis_fee_applied">
-          <el-select placeholder="请选择" v-model="form.Bis_fee_applied">
-            <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="费用是否到账" prop="Bis_closed">
-          <el-select placeholder="请选择" v-model="form.Bis_closed">
-            <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <el-form ref="form" :model="form" :rules="rules" label-width="110px" v-if="active === 3" >
-        <el-form-item label="班级集体照" prop="BClass_photo">
-          <el-upload
-            action=""
-            ref="BClass_photo"
-            class="upload-demo"
-            list-type="picture"
-            :limit="1"
-            :disabled="BClass_photo"
-            :auto-upload="false"
-            :http-request="handleBeforeCard01"
-            :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer" v-if="active===3">
-        <el-button type="primary" @click="submitFile">上传服务器</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button style="margin-top: 12px;" @click="up" v-if="active > 1">上一步</el-button>
-        <el-button style="margin-top: 12px;" @click="next" v-if="active < 3">下一步</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -201,6 +66,7 @@ import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {DeleteCos, LEupload} from "../../../utils/cos";
 import {Message} from "element-ui";
 import {addBanJi, deleteBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
+import {getBanFile} from "../../../api/studentsInfo/banFile";
 
 export default {
   name: "index",
@@ -230,83 +96,6 @@ export default {
         {name:'班级编号',id: 'BClass_code'},
         {name:'讲师姓名',id: 'BClass_name'},
       ],
-      rules: {
-        BClass_code:[
-          {required: true, message: "班级编号不能为空", trigger: "blur"}
-        ],
-        BCEndTime: [
-          {required: true, message: "结束时间不能为空", trigger: "blur"}
-        ],
-        BClass_name: [
-          {required: true, message: "姓名不能为空", trigger: "blur"}
-        ],
-        BClass_address: [
-          {required: true, message: "开班地不能为空", trigger: "blur"}
-        ],
-        BDepartment: [
-          {required: true, message: "电话不能为空", trigger: "blur"}
-        ],
-        BHead_teacher: [
-          {required: true, message: "班主任不能为空", trigger: "blur"}
-        ],
-        BClass_type: [
-          {required: true, message: "班级性质不能为空", trigger: "blur"}
-        ],
-        BCStartTime: [
-          {required: true, message: "开课时间不能为空", trigger: "blur"}
-        ],
-        BLecturer: [
-          {required: true, message: "讲课老师不能为空", trigger: "blur"}
-        ],
-        BStaff: [
-          {required: true, message: "工作人员不能为空", trigger: "blur"}
-        ],
-        BClass_photo: [
-          {required: true, message: "班级集体照未上传", trigger: "blur"}
-        ],
-        BLiving_fee:[
-          {required: true, message: "食宿标准不能为空", trigger: "blur"}
-        ],
-        BGov_fee:[
-          {required: true, message: "政府补贴费用不能为空", trigger: "blur"}
-        ],
-        BCommission:[
-          {required: true, message: "提成标准不能为空", trigger: "blur"}
-        ],
-        BClass_pay:[
-          {required: true, message: "课酬标准不能为空", trigger: "blur"}
-        ],
-        BClass_hour:[
-          {required: true, message: "课时标准不能为空", trigger: "blur"}
-        ],
-        BAdmissions_commission:[
-          {required: true, message: "招生提成不能为空", trigger: "blur"}
-        ],
-        Bco_organizer:[
-          {required: true, message: "合办单位不能为空", trigger: "blur"}
-        ],
-        Bco_organizer_commission:[
-          {required: true, message: "合办单位分成不能为空", trigger: "blur"}
-        ],
-        Bis_fee_applied:[
-          {required: true, message: "是否已申请政府补贴不能为空", trigger: "blur"}
-        ],
-        BManagement_fee:[
-          {required: true, message: "管理费用不能为空", trigger: "blur"}
-        ],
-        Bis_closed:[
-          {required: true, message: "费用是否到账不能为空", trigger: "blur"}
-        ],
-        BLev: [
-          {required: true, message: "证书等级不能为空", trigger: "blur"}
-        ],
-        BOt_name: [
-          {required: true, message: "工种类型不能为空", trigger: "blur"}
-        ],
-        BR_code: [
-          {required: true, message: "人社局编号 不能为空", trigger: "blur"}
-        ]
-      },
       Secret: {},
       BType: [
         {name: "政府补贴班", value: 1},
@@ -374,7 +163,6 @@ export default {
       };
       this.BClass_photo = false
       this.active = 1;
-      this.$refs['form'].resetFields();
     },
     //查询参数重置
     resetQuery(){
@@ -489,19 +277,6 @@ export default {
         })
       }
     },
-    //清除之前上传服务器的数据
-    resetFW(obj){
-      getLeFile().then(res=>{
-        this.Secret = res.data
-      })
-      if(obj.BClass_photo !== '' && obj.BClass_photo !== undefined){
-        DeleteCos(this.Secret,obj.BClass_photo).then(res =>{
-          console.log("服务器清理成功")
-        }).catch(err=>{
-          console.log(err)
-        })
-      }
-    },
     //
     next(){
       this.$refs["form"].validate(valid =>{
@@ -513,10 +288,6 @@ export default {
     up(){
       this.active --
     },
-    //预览
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-    },
     //表格参数渲染
     _Bis_fee_applied(row){
       return isNot(row.Bis_fee_applied)
@@ -526,52 +297,6 @@ export default {
     },
     _BLev(row){
       return level(row.BLev)
-    },
-    //提交之前图片上传服务器
-    handleBeforeCard01(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'BanJi/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.BClass_photo = res
-          this.$message({
-            message: '上传班级照成功',
-            type: 'success',
-            showClose: true
-          })
-          this.BClass_photo = true
-        }).catch(error=>{
-          this.$message({
-            message: '上传班级照失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
-        })
-      })
-    },
-    //上传
-    submitFile(){
-      this.$confirm('请确定文件是否正确，上传后不能修改, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        if (this.BClass_photo === false){
-          this.$refs.BClass_photo.submit()
-        }
-
-      }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: ''
-        // });
-      });
-    },
-    //判断上传
-    pdUpload(){
-      if (this.BClass_photo === true){
-        Message.warning("班级集体照已上传")
-      }
     }
   }
 }

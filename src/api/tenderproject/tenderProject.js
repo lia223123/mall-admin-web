@@ -1,4 +1,4 @@
-import request from "../utils/request";
+import request from "../../utils/request";
 
 //查询所有
 export function listTenderProject(query){

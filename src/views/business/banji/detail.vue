@@ -37,6 +37,10 @@
                 <div class="pull-right">{{ Class.BClass_type | banjiType}}</div>
               </li>
               <li class="list-group-item">
+                项目名
+                <div class="pull-right">{{ Class.BT_tp_projectName }}</div>
+              </li>
+              <li class="list-group-item">
                 班主任
                 <div class="pull-right">{{ Class.BHead_teacher }}</div>
               </li>
@@ -110,12 +114,33 @@
               <el-form>
                 <el-form-item>
                   <el-button @click="DidCard"  >班级集体照下载</el-button>
+                  <el-button @click="()=>{ this.open = true}"  >班级集体照上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>
-
+              <el-dialog title="班级照上传" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
+                <el-form ref="form" :model="form" :rules="rules" label-width="110px">
+                  <el-form-item label="班级集体照" prop="BClass_photo">
+                    <el-upload
+                      action=""
+                      ref="BClass_photo"
+                      class="upload-demo"
+                      list-type="picture"
+                      :limit="1"
+                      :auto-upload="false"
+                      :http-request="DidLoad"
+                      :on-preview="handlePictureCardPreview">
+                      <el-button size="small" type="primary">点击上传</el-button>
+                      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过1MB,只能上传一张图片</div>
+                    </el-upload>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" @click="submitFile">上传服务器</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-dialog>
             </el-tab-pane>
             <el-tab-pane label="修改信息" name="resetInfo">
               <el-form ref="form" :model="Class" :rules="rules" label-width="150px" >
@@ -221,10 +246,11 @@
 <script>
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {banjiType, formatSex, isNot, level} from "../../../utils";
-import {DownLoadCos} from "../../../utils/cos";
+import {DownLoadCos, LEupload, reLoad} from "../../../utils/cos";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {editBanJi, getBanJi} from "../../../api/studentsInfo/banji";
 import {Message} from "element-ui";
+import {getBanFile} from "../../../api/studentsInfo/banFile";
 
 export default {
   name: "detail",
@@ -339,6 +365,8 @@ export default {
       ],
       //需要的参数
       lecturers: {},
+      dialogImageUrl: '',
+      open: false,
     }
   },
   created() {
@@ -354,12 +382,13 @@ export default {
     getClass(id){
       getBanJi(id).then(res =>{
         this.Class = res.data
+        console.log(this.Class)
         this.Class.BClass_name = this.Class.BClass_name.toString()
       })
     },
     //下载文件
     DidCard(){
-      getLeFile().then(res =>{
+      getBanFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm('是否下载班级编号为' + this.Class.BClass_code + "的班级集体照？","警告", {
@@ -399,6 +428,75 @@ export default {
     },
     back(){
       this.$router.go(-1)
+    },
+    //班级照上传
+    DidLoad(file){
+      getBanFile().then(res =>{
+        this.Secret = res.data
+      })
+      this.$confirm("是否上传班级照",'警告',{
+        confirmButtonText: '确定',
+        cancelButtonText: "取消",
+        type: 'warning',
+      }).then(()=>{
+        if(this.Class.BClass_photo === undefined || this.Class.BClass_photo === '' || this.Class.BClass_photo === null){
+          LEupload(this.Secret,file.file,"BanJi/").then(res=>{
+            this.Class.BClass_photo = res
+            this.submit()
+            this.$message({
+              message: '上传班级照成功',
+              type: 'success',
+              showClose: true
+            })
+            this.open = false
+          }).catch(error=>{
+            this.$message({
+              message: '上传班级照失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+          })
+        }else {
+          reLoad(this.Secret,file.file,this.Class.BClass_photo).then(res =>{
+            this.$message({
+              message: '上传班级照成功',
+              type: 'success',
+              showClose: true
+            })
+            this.open = false
+          }).catch(error=>{
+            this.$message({
+              message: '上传班级照失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+          })
+        }
+      })
+    },
+    //预览
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+    },
+    //关闭弹窗
+    handleClose(done){
+      this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        done()
+        this.dialogImageUrl = ''
+        this.open = false
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+    submitFile(){
+      this.$refs.BClass_photo.submit()
     }
   },
   filters: {

@@ -35,6 +35,19 @@ export const constantRouterMap = [
     ]
   },
   {
+    path: '/tender',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/tender/:id(\\d+)',
+        name: 'tender',
+        component: ()=> import('@/views/business/tenderProjects/detail'),
+        meta: {title: '中标项目详情', icon : ''}
+      }
+    ]
+  },
+  {
     path: '/lectures',
     component: Layout,
     hidden: true,
@@ -59,6 +72,16 @@ export const constantRouterMap = [
         meta: {title: '班级信息详情', icon : ''}
       }
     ]
+  },
+  {
+    path: '/document',
+    component: Layout,
+    redirect: '/document',
+    children: [{
+      path: 'document',
+      name: 'document',
+      meta: {title: '标书资料', icon: 'home'}
+    }]
   },
   {
     path: '',
@@ -111,10 +134,10 @@ export const constantRouterMap = [
     meta: {title: '业务处理', icon: 'sms-ad'},
     children: [
       {
-        path: 'stuInfo',
-        name: 'stuInfo',
-        component: () => import('@/views/business/stuInfo/index'),
-        meta: {title: '学员信息', icon: 'ums-admin'}
+        path: 'tenderProject',
+        name: 'tenderProject',
+        component: () => import('@/views/business/tenderProjects/index'),
+        meta: {title: '中标项目', icon: 'ums-admin'}
       },
       {
         path: 'banji',
@@ -122,6 +145,25 @@ export const constantRouterMap = [
         component: () => import('@/views/business/banji/index'),
         meta: {title: '班级信息', icon: 'ums-admin'}
       },
+      {
+        path: 'stuInfo',
+        name: 'stuInfo',
+        component: () => import('@/views/business/stuInfo/index'),
+        meta: {title: '学员信息', icon: 'ums-admin'}
+      },
+    ]
+  },
+  {
+    path: '/Finance',
+    component: Layout,
+    redirect: '/Finance',
+    meta: {title: '财务处理', icon: 'sms-ad'},
+    children: [
+      {
+        path: 'Finance',
+        name: 'Finance',
+        meta: {title: '财务处理', icon: 'ums-admin'}
+      }
     ]
   }
 ]

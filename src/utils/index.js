@@ -97,7 +97,7 @@ export function stu_personnel(num){
     default: return "无"
   }
 }
-//医疗信息
+//保险类型
 export function InsureType(num){
   switch (num) {
     case 1: return "无"
@@ -134,5 +134,12 @@ export function level(num){
     case '6': return "技师"
     case '7': return "高级技师"
     default: return "无"
+  }
+}
+//招标单位
+export function tenderCompany(num){
+  switch(num) {
+    case 1: return '人社局'
+    case 2: return '公共就业和人才服务中心'
   }
 }

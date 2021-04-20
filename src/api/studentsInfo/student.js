@@ -1,4 +1,4 @@
-import request from "../utils/request";
+import request from "../../utils/request";
 
 //查询所有
 export function listStudent(query){
@@ -36,5 +36,12 @@ export function deleteStudent(id){
   return request({
     url: '/studentsinfo/v1/studentList/' + id + '/',
     method: 'delete'
+  })
+}
+//获证个数
+export function getBook(id){
+  return request({
+    url: '/studentsinfo/v1/tBookCount/' + id + '/',
+    method: 'get'
   })
 }

@@ -101,6 +101,7 @@
                 </el-form-item>
               </el-form>
             </el-tab-pane>
+            <el-tab-pane label="财务提成" name="finance"></el-tab-pane>
           </el-tabs>
         </el-card>
       </el-col>

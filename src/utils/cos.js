@@ -38,10 +38,52 @@ export function LEupload(Secret,file,key){
   })
 }
 
+//覆盖上传
+export function reLoad(Secret,file,key){
+  const cos =  new COS({
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+  });
+  return new Promise((resolve, reject) =>{
+    cos.putObject({
+      Bucket: 'filegchumandatas01-1304877674',
+      Region:  'ap-nanjing',
+      Key:key,
+      Body: file,
+      onProgress: function(progressData) {
+        console.log(JSON.stringify(progressData));
+      },
+    },function (err, data){
+      if(err){
+        reject(err)
+      }
+      else{
+        resolve(data)
+      }
+    })
+  })
+}
+//下载对象
 export function DownLoadCos(Secret,key){
   const cos = new COS({
-    SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
-    SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
   });
   return new Promise((resolve, reject) => {
     cos.getObjectUrl({
@@ -60,8 +102,16 @@ export function DownLoadCos(Secret,key){
 
 export function DeleteCos(Secret, key){
   const cos = new COS({
-    SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
-    SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
   });
   return new Promise((resolve, reject) => {
     cos.deleteObject({
