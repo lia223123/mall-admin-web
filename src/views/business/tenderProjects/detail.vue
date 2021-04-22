@@ -59,7 +59,7 @@
       <el-col :span="14" :xs="24">
         <el-card>
           <div slot="header" class="clearfix">
-            <span>班级信息资料</span>
+            <span>项目信息资料</span>
           </div>
           <el-tabs v-model="active">
             <el-tab-pane label="中标项目基本资料" name="Classinfo">
@@ -72,26 +72,28 @@
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>
-              <el-dialog title="班级照上传" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
+              <el-dialog title="标书上传" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
                 <el-form ref="form" :model="form" :rules="rules" label-width="110px">
-                  <el-form-item label="班级集体照" prop="BClass_photo">
+                  <el-form-item label="标书" prop="tp_url">
                     <el-upload
                       action=""
                       ref="BClass_photo"
                       class="upload-demo"
-                      list-type="picture"
+                      list-type="text"
                       :limit="1"
                       :auto-upload="false"
                       :http-request="DidLoad"
                       :on-preview="handlePictureCardPreview">
                       <el-button size="small" type="primary">点击上传</el-button>
-                      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过1MB,只能上传一张图片</div>
+                      <div slot="tip" class="el-upload__tip" v-if="this.Class.tp_url">标书已上传</div>
                     </el-upload>
                   </el-form-item>
-                  <el-form-item>
-                    <el-button type="primary" @click="submitFile">上传服务器</el-button>
-                  </el-form-item>
                 </el-form>
+                <div slot="footer" class="dialog-footer">
+                  <el-button type="primary" @click="submitFile">上传服务器</el-button>
+                  <el-button type="primary" @click="submit">确 定</el-button>
+                  <el-button @click="cancel">取 消</el-button>
+                </div>
               </el-dialog>
             </el-tab-pane>
             <el-tab-pane label="修改信息" name="resetInfo">
@@ -148,7 +150,7 @@
 <script>
 import {DownLoadCos, LEupload, reLoad} from "../../../utils/cos";
 import {Message} from "element-ui";
-import {getBanFile} from "../../../api/studentsInfo/banFile";
+import {getBanFile} from "../../../api/studentsInfo/banFile"
 import {editTenderProject, getTenderProject} from "../../../api/tenderproject/tenderProject";
 import {tenderCompany} from "../../../utils";
 
@@ -230,7 +232,7 @@ export default {
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        DownLoadCos(this.Secret,this.Class.BClass_photo).then(res=>{
+        DownLoadCos(this.Secret,this.Class.tp_url).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
         ).catch(err =>{
@@ -268,15 +270,14 @@ export default {
       getBanFile().then(res =>{
         this.Secret = res.data
       })
-      this.$confirm("是否上传标书",'警告',{
+      this.$confirm("是否上传标书？已有标书再上传会覆盖上一个标书",'警告',{
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
       }).then(()=>{
-        if(this.Class.BClass_photo === undefined || this.Class.BClass_photo === '' || this.Class.BClass_photo === null){
+        if(!this.Class.tp_url){
           LEupload(this.Secret,file.file,"tender/").then(res=>{
-            this.Class.BClass_photo = res
-            this.submit()
+            this.Class.tp_url = res
             this.$message({
               message: '上传标书成功',
               type: 'success',
@@ -291,13 +292,12 @@ export default {
             })
           })
         }else {
-          reLoad(this.Secret,file.file,this.Class.BClass_photo).then(res =>{
+          reLoad(this.Secret,file.file,this.Class.tp_url).then(res =>{
             this.$message({
               message: '上传标书成功',
               type: 'success',
               showClose: true
             })
-            this.open = false
           }).catch(error=>{
             this.$message({
               message: '上传标书失败，请重新上传'+ error,
@@ -319,9 +319,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        done()
         this.dialogImageUrl = ''
         this.open = false
+        done()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -331,6 +331,10 @@ export default {
     },
     submitFile(){
       this.$refs.BClass_photo.submit()
+    },
+    cancel(){
+      this.open = false
+      this.dialogImageUrl = ''
     }
   },
   //过滤器

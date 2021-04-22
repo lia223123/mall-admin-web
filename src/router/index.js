@@ -74,6 +74,19 @@ export const constantRouterMap = [
     ]
   },
   {
+    path: '/stuInfo',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/stuInfo/:id(\\d+)',
+        name: 'stuInfo',
+        component: ()=> import('@/views/business/stuInfo/detail'),
+        meta: {title: '学生信息详情', icon : ''}
+      }
+    ]
+  },
+  {
     path: '/document',
     component: Layout,
     redirect: '/document',

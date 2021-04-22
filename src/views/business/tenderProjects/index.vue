@@ -20,7 +20,7 @@
         >新增</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" >
+    <el-table v-loading="loading" :data="dataList" border>
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="项目编号" align="center" prop="tp_projectCode">
         <template slot-scope="scope">
@@ -458,7 +458,7 @@ export default {
         Bis_fee_applied: undefined,
         Bis_closed: undefined,
         BClass_photo: undefined,
-        BT:undefined,
+        BT: undefined,
         B_type: 1,
         BT_tp_projectName: undefined
       };

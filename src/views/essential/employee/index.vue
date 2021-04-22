@@ -20,7 +20,7 @@
         >新增</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" >
+    <el-table v-loading="loading" :data="dataList" border>
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="员工编号" align="center" prop="employee_code" />
       <el-table-column label="身份证" align="center" prop="em_idCard"/>

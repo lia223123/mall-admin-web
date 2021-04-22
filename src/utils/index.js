@@ -143,3 +143,12 @@ export function tenderCompany(num){
     case 2: return '公共就业和人才服务中心'
   }
 }
+//班级状态
+export function ClassStatus(num){
+  switch(num) {
+    case 1: return '未进行'
+    case 2: return '进行中'
+    case 3: return '已结束'
+
+  }
+}

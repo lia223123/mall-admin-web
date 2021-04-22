@@ -9,7 +9,7 @@
       </el-input>
       <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
     </div>
-    <el-table v-loading="loading" :data="dataList" >
+    <el-table v-loading="loading" :data="dataList" border >
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="班级编号" align="center" prop="BClass_code">
         <template slot-scope="scope">
@@ -33,7 +33,8 @@
       <el-table-column label="班级性质" align="center" prop="BClass_type" :formatter="_BClass_type"/>
       <el-table-column label="是否申请费用" align="center" prop="Bis_fee_applied" :formatter="_Bis_fee_applied"/>
       <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_fee_applied"/>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="班级状态" align="center" prop="B_type" :formatter="_classStatus"/>
+      <el-table-column label="财务操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -47,6 +48,28 @@
             icon="el-icon-collection-tag"
             @click="handleHeSuan(scope.row)"
           >金额核算</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column label="流程操作" align="center" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-s-flag"
+            @click="addClassStatus(scope.row)"
+            v-if="scope.row.B_type === 1"
+          >
+            开班
+          </el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-s-flag"
+            @click="addClassStatus(scope.row)"
+            v-if="scope.row.B_type === 2"
+          >
+            结束
+          </el-button>
           <el-button
             size="mini"
             type="text"
@@ -61,11 +84,11 @@
 
 <script>
 import {addLecturers, deleteLecturers, getLecturers, listLecturers} from "../../../api/studentsInfo/lecturers";
-import {banjiType, formatSex, isNot, level} from "../../../utils";
+import {banjiType, ClassStatus, formatSex, isNot, level} from "../../../utils";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {DeleteCos, LEupload} from "../../../utils/cos";
 import {Message} from "element-ui";
-import {addBanJi, deleteBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
+import {addBanJi, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
 import {getBanFile} from "../../../api/studentsInfo/banFile";
 
 export default {
@@ -160,9 +183,8 @@ export default {
         Bis_fee_applied: undefined,
         Bis_closed: undefined,
         BClass_photo: undefined,
+        B_type: undefined,
       };
-      this.BClass_photo = false
-      this.active = 1;
     },
     //查询参数重置
     resetQuery(){
@@ -277,16 +299,42 @@ export default {
         })
       }
     },
-    //
-    next(){
-      this.$refs["form"].validate(valid =>{
-        if(valid){
-          this.active ++
-        }
-      });
-    },
-    up(){
-      this.active --
+    //更改状态
+    addClassStatus(row){
+      if(row.B_type === 1){
+        this.$confirm('确定开班编号为' + row.BClass_code + '的班级？', '开班',{
+          confirmButtonText: '确定',
+          cancelButtonText: '确定',
+          type: "warning"
+        }).then(()=>{
+          this.form = row
+          this.form.B_type++
+          editBanJi(this.form).then(res=>{
+              Message.success({
+                message: '班级编号' + this.form.BClass_code + '开班成功',
+                showClose: true
+              })
+            this.reset()
+          })
+        })
+      }else{
+        this.$confirm('确定结束编号为' + row.BClass_code + '的班级？', '结束',{
+          confirmButtonText: '确定',
+          cancelButtonText: '确定',
+          type: "warning"
+        }).then(()=>{
+          this.form = row
+          this.form.B_type++
+          editBanJi(this.form).then(res=>{
+              Message.success({
+                message: '班级编号' + this.form.BClass_code + '课程结束',
+                showClose: true
+              })
+            this.reset()
+          })
+        })
+      }
+
     },
     //表格参数渲染
     _Bis_fee_applied(row){
@@ -297,6 +345,9 @@ export default {
     },
     _BLev(row){
       return level(row.BLev)
+    },
+    _classStatus(row){
+      return ClassStatus(row.B_type)
     }
   }
 }

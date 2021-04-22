@@ -20,10 +20,10 @@
         >新增</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" >
+    <el-table v-loading="loading" :data="dataList" border>
       <el-table-column label="id" align="center" prop="id">
         <template slot-scope="scope">
-          <router-link :to="'/lecturesDetail/' + scope.row.id" class="link-type">
+          <router-link :to="'/stuInfo/' + scope.row.id" class="link-type">
             <el-tooltip content="点击查看详细信息" placement="top">
               <span style="color: #1e6abc">{{ scope.row.id }}</span>
             </el-tooltip>
@@ -48,8 +48,9 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            icon="el-icon-picture-outline"
             @click="handleUpload(scope.row)"
+            v-if="!scope.row.STU_photo || !scope.row.STU_photoIdz || !scope.row.STU_photoIdf"
           >图片资料上传</el-button>
           <el-button
             size="mini"
@@ -206,9 +207,9 @@
             :limit="1"
             :http-request="handleBeforeCard"
             :auto-upload="false"
-            :on-preview="handlePictureCardPreview">
+            >
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.STU_photoIdz">身份证正面已上传</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="身份证反面" prop="LE_idCard02">
@@ -220,12 +221,12 @@
             :limit="1"
             :auto-upload="false"
             :http-request="handleBeforeCard01"
-            :on-preview="handlePictureCardPreview">
+            >
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.STU_photoIdf"></div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="毕业证资料" prop="LE_gc">
+        <el-form-item label="学生图片" prop="LE_gc">
           <el-upload
             action=""
             ref="LE_gc"
@@ -234,15 +235,14 @@
             :limit="1"
             :auto-upload="false"
             :http-request="handleBeforeGc"
-            :on-preview="handlePictureCardPreview">
+           >
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.STU_photo"></div>
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitFile">上传服务器</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -252,7 +252,7 @@
 <script>
 import {formatSex, isNot, stu_educations, stu_personnel} from "../../../utils";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
-import {DeleteCos, LEupload} from "../../../utils/cos";
+import {DeleteCos, LEupload, reLoad} from "../../../utils/cos";
 import {Message} from "element-ui";
 import {
   addStudent,
@@ -340,15 +340,6 @@ export default {
         ],
         STU_current_address: [
           {required: true, message: "现住地址不能为空", trigger: "blur"}
-        ],
-        LE_pqc: [
-          {required: true, message: "学生图片未上传", trigger: "blur"}
-        ],
-        LE_idCard01: [
-          {required: true, message: "身份证正面未上传", trigger: "blur"}
-        ],
-        LE_idCard02: [
-          {required: true, message: "身份证反面未上传", trigger: "blur"}
         ]
       },
       Secret: {},
@@ -427,6 +418,9 @@ export default {
         STU_photoIdf: undefined,
       };
       this.$refs['form'].resetFields();
+      this.$refs.LE_idCard01.clearFiles()
+      this.$refs.LE_idCard02.clearFiles()
+      this.$refs.LE_gc.clearFiles()
     },
     //查询参数重置
     resetQuery(){
@@ -509,7 +503,7 @@ export default {
               });
               this.open = false;
               this.getList();
-              this.reset()
+              this.reset();
             }).catch(() =>{
               this.$message({
                 message: '该学员身份证已存在或身份证格式不正确，请修改后再确定',
@@ -531,9 +525,9 @@ export default {
         if(this.form.STU_photo !== null && this.form.STU_photo !== undefined){
           this.resetFW(this.form)
         }
-        this.reset()
         this.open = false
         this.imgOpen = false
+        this.reset()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -588,85 +582,128 @@ export default {
         })
       }
     },
-    //
-    next(){
-      this.$refs["form"].validate(valid =>{
-        if(valid){
-          this.active ++
-        }
-      });
-    },
-    up(){
-      this.active --
-    },
-    //预览
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-    },
     //表格参数渲染
     _sex(row){
       return formatSex(row.STU_gender)
     },
     //提交之前图片上传服务器
     handleBeforeCard(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'Student/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.STU_photoIdz = res
-          this.$message({
-            message: '上传身份证正面成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传身份证正面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
+      if(!this.form.STU_photoIdz){
+        getStuFile().then(response =>{
+          let Secret = response.data
+          let key = 'Student/'
+          LEupload(Secret,file.file,key).then(res=>{
+            this.form.STU_photoIdz = res
+            this.$message({
+              message: '上传身份证正面成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传身份证正面失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
           })
         })
-      })
+      }
+     else{
+        getStuFile().then(response =>{
+          let Secret = response.data
+          reLoad(Secret,file.file,this.form.STU_photoIdz).then(res=>{
+            this.$message({
+              message: '上传身份证正面成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传身份证正面失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+          })
+        })
+      }
     },
     handleBeforeCard01(file){
-      getStuFile().then(response =>{
-        let Secret = response.data
-        let key = 'Student/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.STU_photoIdf = res
-          this.$message({
-            message: '上传身份证反面成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传身份证反面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
+      if(!this.form.STU_photoIdf){
+        getStuFile().then(response =>{
+          let Secret = response.data
+          let key = 'Student/'
+          LEupload(Secret,file.file,key).then(res=>{
+            this.form.STU_photoIdf = res
+            this.$message({
+              message: '上传身份证反面成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传身份证反面失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
           })
         })
-      })
+      }else {
+        getStuFile().then(response =>{
+          let Secret = response.data
+          reLoad(Secret,file.file,this.form.STU_photoIdf).then(res=>{
+            this.$message({
+              message: '上传身份证反面成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传身份证反面失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+          })
+        })
+      }
+
     },
     handleBeforeGc(file){
-      getStuFile().then(response =>{
-        let Secret = response.data
-        let key = 'Student/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.STU_photo = res
-          this.gc = true
-          this.$message({
-            message: '上传学生图片成功',
-            type: 'success',
-            showClose: true
-          })
-        }).catch(error=>{
-          this.$message({
-            message: '上传学生图片失败，请重新上传'+ error,
-            type: 'warning'
+      if(!this.form.STU_photo){
+        getStuFile().then(response =>{
+          let Secret = response.data
+          let key = 'Student/'
+          LEupload(Secret,file.file,key).then(res=>{
+            this.form.STU_photo = res
+            this.$message({
+              message: '上传学生图片成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传学生图片失败，请重新上传'+ error,
+              type: 'warning'
+            })
           })
         })
-      })
+      }else{
+        getStuFile().then(response =>{
+          let Secret = response.data
+          reLoad(Secret,file.file,this.form.STU_photo).then(res=>{
+            this.$message({
+              message: '上传学生图片成功',
+              type: 'success',
+              showClose: true
+            })
+          }).catch(error=>{
+            this.$message({
+              message: '上传学生图片失败，请重新上传'+ error,
+              type: 'warning'
+            })
+          })
+        })
+      }
+
     },
     //上传
     submitFile(){
@@ -678,6 +715,7 @@ export default {
           this.$refs.LE_idCard01.submit()
           this.$refs.LE_idCard02.submit()
           this.$refs.LE_gc.submit()
+          this.submitForm()
       }).catch(() => {
         // this.$message({
         //   type: 'info',

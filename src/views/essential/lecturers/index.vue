@@ -20,7 +20,7 @@
         >新增</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" >
+    <el-table v-loading="loading" :data="dataList" border>
       <el-table-column label="id" align="center" prop="id"/>
       <el-table-column label="讲课老师编号" align="center" prop="LEid">
         <template slot-scope="scope">
