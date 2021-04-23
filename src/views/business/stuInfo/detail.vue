@@ -116,6 +116,7 @@
                       list-type="picture"
                       ref="LE_idCard01"
                       :limit="1"
+                      :on-success="resetFile1"
                       :http-request="handleBeforeCard"
                       :auto-upload="false"
                       >
@@ -130,6 +131,7 @@
                       class="upload-demo"
                       list-type="picture"
                       :limit="1"
+                      :on-success="resetFile2"
                       :auto-upload="false"
                       :http-request="handleBeforeCard01"
                       >
@@ -144,6 +146,7 @@
                       class="upload-demo"
                       list-type="picture"
                       :limit="1"
+                      :on-success="resetFile3"
                       :auto-upload="false"
                       :http-request="handleBeforeGc"
                       >
@@ -154,7 +157,8 @@
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                   <el-button type="primary" @click="submitFile">上传服务器</el-button>
-                  <el-button @click="cancel">取 消</el-button>
+                  <el-button type="primary" @click="submit">确定</el-button>
+                  <el-button @click="cancel" :disabled="cancelIsDes">取 消</el-button>
                 </div>
               </el-dialog>
             </el-tab-pane>
@@ -357,7 +361,9 @@ export default {
       Teacher: {},
       imgOpen: false,
       dialogImageUrl: '',
-      books: {}
+      books: {},
+      //取消按钮的禁用
+      cancelIsDes: false
     }
   },
   created() {
@@ -461,6 +467,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证正面失败，请重新上传'+ error,
@@ -501,6 +508,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证反面失败，请重新上传'+ error,
@@ -541,6 +549,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传学生图片失败，请重新上传'+ error,
@@ -576,7 +585,7 @@ export default {
         this.$refs.LE_idCard01.submit()
         this.$refs.LE_idCard02.submit()
         this.$refs.LE_gc.submit()
-        this.submit()
+        this.cancelIsDes = true
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -586,16 +595,26 @@ export default {
     },
     //关闭弹窗
     handleClose(done){
-      done()
-      this.imgOpen = false
-      this.$refs.LE_idCard01.clearFiles()
-      this.$refs.LE_idCard02.clearFiles()
-      this.$refs.LE_gc.clearFiles()
-    },
+      this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        done()
+        this.imgOpen = false
+        })
+      },
     cancel(){
       this.imgOpen = false
+    },
+    //上传完成后清除预览
+    resetFile1(){
       this.$refs.LE_idCard01.clearFiles()
+    },
+    resetFile2(){
       this.$refs.LE_idCard02.clearFiles()
+    },
+    resetFile3(){
       this.$refs.LE_gc.clearFiles()
     },
     //保存
@@ -607,10 +626,8 @@ export default {
         });
         this.isDes = true
         this.imgOpen = false
+        this.cancelIsDes = false
         this.getUser(this.id)
-        this.$refs.LE_idCard01.clearFiles()
-        this.$refs.LE_idCard02.clearFiles()
-        this.$refs.LE_gc.clearFiles()
       }).catch(error =>{
         this.$message({
           message: '请检查身份证与学员身份证是否有重复，如果没有重复请联系管理员',
@@ -625,7 +642,6 @@ export default {
       this.$router.go(-1)
     }
   },
-
   filters: {
     //过滤器
     _sex(num){

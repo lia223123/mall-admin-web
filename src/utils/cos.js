@@ -99,7 +99,7 @@ export function DownLoadCos(Secret,key){
     });
   })
 }
-
+//删除
 export function DeleteCos(Secret, key){
   const cos = new COS({
     getAuthorization: function (options, callback){
@@ -119,6 +119,34 @@ export function DeleteCos(Secret, key){
       Region:  'ap-nanjing',
       Key: key,
     },function(err, data) {
+      if(err){
+        reject(err)
+      }else{
+        resolve(data)
+      }
+    });
+  })
+}
+//获取列表
+export function getBucket(Secret, prefix){
+  const cos = new COS({
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+  });
+  return new Promise((resolve, reject) => {
+    cos.getBucket({
+      Bucket: 'filegchumandatas01-1304877674', /* 必须 */
+      Region: 'ap-nanjing',     /* 必须 */
+      Prefix: prefix,           /* 非必须 */
+    }, function(err, data) {
       if(err){
         reject(err)
       }else{

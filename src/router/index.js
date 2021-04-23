@@ -93,6 +93,7 @@ export const constantRouterMap = [
     children: [{
       path: 'document',
       name: 'document',
+      component: ()=>import('@/views/document/index'),
       meta: {title: '标书资料', icon: 'home'}
     }]
   },
@@ -163,6 +164,24 @@ export const constantRouterMap = [
         name: 'stuInfo',
         component: () => import('@/views/business/stuInfo/index'),
         meta: {title: '学员信息', icon: 'ums-admin'}
+      },
+      {
+        path: 'renSheJu',
+        name: 'renSheJu',
+        component: () => import('@/views/business/renSheJu/index'),
+        meta: {title: '人社局信息', icon: 'ums-admin'}
+      },
+      {
+        path: 'trainBook',
+        name: 'trainBook',
+        component: () => import('@/views/business/trainBook/index'),
+        meta: {title: '证书信息', icon: 'ums-admin'}
+      },
+      {
+        path: 'Identify',
+        name: 'Identify',
+        component: () => import('@/views/business/Identify/index'),
+        meta: {title: '鉴定机构信息', icon: 'ums-admin'}
       },
     ]
   },

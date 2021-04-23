@@ -197,14 +197,15 @@
       </div>
     </el-dialog>
     <el-dialog title="图片资料上传" :visible.sync="imgOpen" width="500px" append-to-body  :before-close="handleClose">
-      <el-form ref="form" :model="form" :rules="rules" label-width="110px">
+      <el-form label-width="110px" ref="form" :model="form" :rules="rules">
         <el-form-item label="身份证正面" prop="LE_idCard01" size="small">
           <el-upload
-            action=""
+            action="string"
             class="upload-demo"
             list-type="picture"
             ref="LE_idCard01"
             :limit="1"
+            :on-success="resetFile1"
             :http-request="handleBeforeCard"
             :auto-upload="false"
             >
@@ -214,11 +215,12 @@
         </el-form-item>
         <el-form-item label="身份证反面" prop="LE_idCard02">
           <el-upload
-            action=""
+            action="string"
             ref="LE_idCard02"
             class="upload-demo"
             list-type="picture"
             :limit="1"
+            :on-success="resetFile2"
             :auto-upload="false"
             :http-request="handleBeforeCard01"
             >
@@ -228,11 +230,12 @@
         </el-form-item>
         <el-form-item label="学生图片" prop="LE_gc">
           <el-upload
-            action=""
+            action="string"
             ref="LE_gc"
             class="upload-demo"
             list-type="picture"
             :limit="1"
+            :on-success="resetFile3"
             :auto-upload="false"
             :http-request="handleBeforeGc"
            >
@@ -243,7 +246,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitFile">上传服务器</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="cancel" :disabled="canIsDes">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -251,20 +255,17 @@
 
 <script>
 import {formatSex, isNot, stu_educations, stu_personnel} from "../../../utils";
-import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {DeleteCos, LEupload, reLoad} from "../../../utils/cos";
 import {Message} from "element-ui";
 import {
   addStudent,
   deleteStudent,
-  editStudent, getBook,
+  editStudent,
   getStudent,
-  getTrainBook,
   listStudent
 } from "../../../api/studentsInfo/student";
 import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
 import {getStuFile} from "../../../api/studentsInfo/stuFile";
-import axios from "axios";
 
 export default {
   name: "index",
@@ -374,6 +375,7 @@ export default {
       ],
       Teacher: {},
       imgOpen: false,
+      canIsDes: false
     }
   },
   created() {
@@ -418,9 +420,6 @@ export default {
         STU_photoIdf: undefined,
       };
       this.$refs['form'].resetFields();
-      this.$refs.LE_idCard01.clearFiles()
-      this.$refs.LE_idCard02.clearFiles()
-      this.$refs.LE_gc.clearFiles()
     },
     //查询参数重置
     resetQuery(){
@@ -445,7 +444,7 @@ export default {
         }).catch(err=>{
           console.log(err)
         })
-        deleteStudent(row.id).then(res =>{
+        deleteStudent(row.id).then(() =>{
           this.$message({
             message: "删除成功",
             type: 'success',
@@ -475,7 +474,6 @@ export default {
       }).then(() => {
         this.open = false
         this.imgOpen = false
-        this.resetFW(this.form)
         this.reset()
       }).catch(() => {
         this.$message({
@@ -490,10 +488,13 @@ export default {
         if(valid){
           if(this.form.id !== undefined){
             editStudent(this.form).then(response=>{
-              Message.success("图片上传成功")
+              Message.success({
+                message: "图片上传成功"
+              })
               this.imgOpen = false
               this.getList();
               this.reset()
+              this.canIsDes = false
             })
           }else{
             addStudent(this.form).then(response => {
@@ -582,10 +583,6 @@ export default {
         })
       }
     },
-    //表格参数渲染
-    _sex(row){
-      return formatSex(row.STU_gender)
-    },
     //提交之前图片上传服务器
     handleBeforeCard(file){
       if(!this.form.STU_photoIdz){
@@ -599,6 +596,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证正面失败，请重新上传'+ error,
@@ -639,6 +637,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证反面失败，请重新上传'+ error,
@@ -679,6 +678,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传学生图片失败，请重新上传'+ error,
@@ -689,7 +689,7 @@ export default {
       }else{
         getStuFile().then(response =>{
           let Secret = response.data
-          reLoad(Secret,file.file,this.form.STU_photo).then(res=>{
+          reLoad(Secret,file.file,this.form.STU_photo).then( ()=>{
             this.$message({
               message: '上传学生图片成功',
               type: 'success',
@@ -703,7 +703,6 @@ export default {
           })
         })
       }
-
     },
     //上传
     submitFile(){
@@ -712,16 +711,26 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-          this.$refs.LE_idCard01.submit()
-          this.$refs.LE_idCard02.submit()
-          this.$refs.LE_gc.submit()
-          this.submitForm()
+          this.$refs['LE_idCard01'].submit()
+          this.$refs['LE_idCard02'].submit()
+          this.$refs['LE_gc'].submit()
+        this.canIsDes = true
       }).catch(() => {
         // this.$message({
         //   type: 'info',
         //   message: ''
         // });
       });
+    },
+    //上传成功后清除预览
+    resetFile1(){
+      this.$refs.LE_idCard01.clearFiles()
+    },
+    resetFile2(){
+      this.$refs.LE_idCard02.clearFiles()
+    },
+    resetFile3(){
+      this.$refs.LE_gc.clearFiles()
     },
     //表单渲染
     _education(row){
@@ -732,6 +741,9 @@ export default {
     },
     _filed(row){
       return isNot(row.STU_filed_account)
+    },
+    _sex(row){
+      return formatSex(row.STU_gender)
     },
     //上传表单
     handleUpload(row){

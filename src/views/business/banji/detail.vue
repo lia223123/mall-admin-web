@@ -114,7 +114,7 @@
               <el-form>
                 <el-form-item>
                   <el-button @click="DidCard"  >班级集体照下载</el-button>
-                  <el-button @click="()=>{ this.open = true}"  >班级集体照上传</el-button>
+                  <el-button @click="()=>{ this.open = true }"  >班级集体照上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
