@@ -75,10 +75,10 @@
                 学员归属单位
                 <div class="pull-right">{{ user.STU_employer }}</div>
               </li>
-              <li class="list-group-item">
-                招生老师
-                <div class="pull-right">{{ user.STU_Teacher }}</div>
-              </li>
+<!--              <li class="list-group-item">-->
+<!--                招生老师-->
+<!--                <div class="pull-right">{{ user.STU_Teacher }}</div>-->
+<!--              </li>-->
               <li class="list-group-item">
                 是否为建档立卡户
                 <div class="pull-right">{{ user.STU_filed_account | isNot }}</div>
@@ -116,7 +116,6 @@
                       list-type="picture"
                       ref="LE_idCard01"
                       :limit="1"
-                      :on-success="resetFile1"
                       :http-request="handleBeforeCard"
                       :auto-upload="false"
                       >
@@ -131,7 +130,6 @@
                       class="upload-demo"
                       list-type="picture"
                       :limit="1"
-                      :on-success="resetFile2"
                       :auto-upload="false"
                       :http-request="handleBeforeCard01"
                       >
@@ -146,7 +144,6 @@
                       class="upload-demo"
                       list-type="picture"
                       :limit="1"
-                      :on-success="resetFile3"
                       :auto-upload="false"
                       :http-request="handleBeforeGc"
                       >

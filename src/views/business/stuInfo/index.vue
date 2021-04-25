@@ -41,7 +41,7 @@
       <el-table-column label="人员类别" align="center" prop="STU_personnel_category" :formatter="_personnel"/>
       <el-table-column label="健康状况" align="center" prop="STU_health_status"/>
       <el-table-column label="归属单位" align="center" prop="STU_employer"/>
-      <el-table-column label="招生老师" align="center" prop="STU_Teacher"/>
+<!--      <el-table-column label="招生老师" align="center" prop="STU_Teacher"/>-->
       <el-table-column label="建档立卡" align="center" prop="STU_filed_account" :formatter="_filed"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -205,7 +205,6 @@
             list-type="picture"
             ref="LE_idCard01"
             :limit="1"
-            :on-success="resetFile1"
             :http-request="handleBeforeCard"
             :auto-upload="false"
             >
@@ -220,7 +219,6 @@
             class="upload-demo"
             list-type="picture"
             :limit="1"
-            :on-success="resetFile2"
             :auto-upload="false"
             :http-request="handleBeforeCard01"
             >
@@ -235,7 +233,6 @@
             class="upload-demo"
             list-type="picture"
             :limit="1"
-            :on-success="resetFile3"
             :auto-upload="false"
             :http-request="handleBeforeGc"
            >
@@ -266,6 +263,7 @@ import {
 } from "../../../api/studentsInfo/student";
 import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
 import {getStuFile} from "../../../api/studentsInfo/stuFile";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
 
 export default {
   name: "index",
@@ -420,6 +418,9 @@ export default {
         STU_photoIdf: undefined,
       };
       this.$refs['form'].resetFields();
+      this.$refs['LE_idCard01'].clearFiles()
+      this.$refs['LE_idCard02'].clearFiles()
+      this.$refs['LE_gc'].clearFiles()
     },
     //查询参数重置
     resetQuery(){
@@ -523,9 +524,6 @@ export default {
         type: 'warning'
       }).then(() => {
         done()
-        if(this.form.STU_photo !== null && this.form.STU_photo !== undefined){
-          this.resetFW(this.form)
-        }
         this.open = false
         this.imgOpen = false
         this.reset()
@@ -561,21 +559,21 @@ export default {
       getStuFile().then(res=>{
         this.Secret = res.data
       })
-      if(obj.STU_photo!== '' && obj.STU_photo !== undefined){
+      if(obj.STU_photo){
         DeleteCos(this.Secret,obj.STU_photo).then(res =>{
           console.log("服务器清理成功")
         }).catch(err=>{
           console.log(err)
         })
       }
-      if(obj.STU_photoIdz !== '' && obj.STU_photoIdz !== undefined ){
+      if(obj.STU_photoIdz){
         DeleteCos(this.Secret,obj.STU_photoIdz).then(res =>{
           console.log("服务器清理成功")
         }).catch(err=>{
           console.log(err)
         })
       }
-      if(obj.STU_photoIdf !== '' && obj.STU_photoIdf !== undefined){
+      if(obj.STU_photoIdf){
         DeleteCos(this.Secret,obj.STU_photoIdf).then(res =>{
           console.log("服务器清理成功")
         }).catch(err=>{
@@ -586,7 +584,7 @@ export default {
     //提交之前图片上传服务器
     handleBeforeCard(file){
       if(!this.form.STU_photoIdz){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -597,17 +595,19 @@ export default {
               showClose: true
             })
             file.onSuccess()
+            this.canIsDes = true
           }).catch(error=>{
             this.$message({
               message: '上传身份证正面失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         })
       }
      else{
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.form.STU_photoIdz).then(res=>{
             this.$message({
@@ -615,19 +615,22 @@ export default {
               type: 'success',
               showClose: true
             })
+            this.canIsDes = true
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证正面失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.Error()
           })
         })
       }
     },
     handleBeforeCard01(file){
       if(!this.form.STU_photoIdf){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -637,6 +640,7 @@ export default {
               type: 'success',
               showClose: true
             })
+            this.canIsDes = true
             file.onSuccess()
           }).catch(error=>{
             this.$message({
@@ -644,10 +648,11 @@ export default {
               type: 'warning',
               showClose: true
             })
+            file.Error()
           })
         })
       }else {
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.form.STU_photoIdf).then(res=>{
             this.$message({
@@ -655,12 +660,15 @@ export default {
               type: 'success',
               showClose: true
             })
+            this.canIsDes = true
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证反面失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.Error()
           })
         })
       }
@@ -668,7 +676,7 @@ export default {
     },
     handleBeforeGc(file){
       if(!this.form.STU_photo){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -687,7 +695,7 @@ export default {
           })
         })
       }else{
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.form.STU_photo).then( ()=>{
             this.$message({
@@ -714,7 +722,7 @@ export default {
           this.$refs['LE_idCard01'].submit()
           this.$refs['LE_idCard02'].submit()
           this.$refs['LE_gc'].submit()
-        this.canIsDes = true
+          this.canIsDes = true
       }).catch(() => {
         // this.$message({
         //   type: 'info',
@@ -725,12 +733,8 @@ export default {
     //上传成功后清除预览
     resetFile1(){
       this.$refs.LE_idCard01.clearFiles()
-    },
-    resetFile2(){
-      this.$refs.LE_idCard02.clearFiles()
-    },
-    resetFile3(){
-      this.$refs.LE_gc.clearFiles()
+      this.$refs['LE_idCard02'].clearFiles()
+      this.$refs['LE_gc'].clearFiles()
     },
     //表单渲染
     _education(row){

@@ -130,16 +130,17 @@
                       list-type="picture"
                       :limit="1"
                       :auto-upload="false"
-                      :http-request="DidLoad"
-                      :on-preview="handlePictureCardPreview">
+                      :http-request="DidLoad">
                       <el-button size="small" type="primary">点击上传</el-button>
                       <div slot="tip" class="el-upload__tip" v-if="this.Class.BClass_photo">班级照已上传</div>
                     </el-upload>
                   </el-form-item>
-                  <el-form-item>
-                    <el-button type="primary" @click="submitFile">上传服务器</el-button>
-                  </el-form-item>
                 </el-form>
+                <div class="el-dialog__footer">
+                  <el-button type="primary" @click="submitFile">上传服务器</el-button>
+                  <el-button type="primary" @click="submit">确定</el-button>
+                  <el-button type="primary" @click="cancel">取消</el-button>
+                </div>
               </el-dialog>
             </el-tab-pane>
             <el-tab-pane label="修改信息" name="resetInfo">
@@ -251,6 +252,7 @@ import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {editBanJi, getBanJi} from "../../../api/studentsInfo/banji";
 import {Message} from "element-ui";
 import {getBanFile} from "../../../api/studentsInfo/banFile";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
 
 export default {
   name: "detail",
@@ -350,11 +352,11 @@ export default {
         {name: "政府补贴班", value: 1},
         {name: '社招班', value: 2}
       ],
-        isNot: [
+      isNot: [
         {name: '是',value: 1},
         {name: '否',value: 2}
       ],
-        level: [
+      level: [
         {name: '无（合格证）', value: '1'},
         {name: '专项能力证', value: '2'},
         {name: '初级', value: '3'},
@@ -382,13 +384,12 @@ export default {
     getClass(id){
       getBanJi(id).then(res =>{
         this.Class = res.data
-        console.log(this.Class)
         this.Class.BClass_name = this.Class.BClass_name.toString()
       })
     },
     //下载文件
     DidCard(){
-      getBanFile().then(res =>{
+      getAllFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm('是否下载班级编号为' + this.Class.BClass_code + "的班级集体照？","警告", {
@@ -399,7 +400,7 @@ export default {
         DownLoadCos(this.Secret,this.Class.BClass_photo).then(res=>{
             window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
           }
-        ).catch(err =>{
+        ).catch(() =>{
           Message.warning({
             message: '该班级未上传班级集体照',
             showClose: true
@@ -409,14 +410,16 @@ export default {
     },
     //保存
     submit(){
-      editBanJi(this.Class).then(res =>{
+      editBanJi(this.Class).then(() =>{
         this.$message({
           message: '修改成功',
           type: 'success'
         });
         this.isDes = true
         this.getClass(this.id)
-      }).catch(error =>{
+        this.open = false
+        this.$refs.BClass_photo.clearFiles()
+      }).catch(() =>{
         this.$message({
           message: '请检查班级编号是否有重复，如果没有重复请联系管理员',
           type: 'warning'
@@ -431,7 +434,7 @@ export default {
     },
     //班级照上传
     DidLoad(file){
-      getBanFile().then(res =>{
+      getAllFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm("是否上传班级照",'警告',{
@@ -439,22 +442,22 @@ export default {
         cancelButtonText: "取消",
         type: 'warning',
       }).then(()=>{
-        if(this.Class.BClass_photo === undefined || this.Class.BClass_photo === '' || this.Class.BClass_photo === null){
+        if(!this.Class.BClass_photo){
           LEupload(this.Secret,file.file,"BanJi/").then(res=>{
             this.Class.BClass_photo = res
-            this.submit()
             this.$message({
               message: '上传班级照成功',
               type: 'success',
               showClose: true
             })
-            this.open = false
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传班级照失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         }else {
           reLoad(this.Secret,file.file,this.Class.BClass_photo).then(res =>{
@@ -463,20 +466,17 @@ export default {
               type: 'success',
               showClose: true
             })
-            this.open = false
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传班级照失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         }
       })
-    },
-    //预览
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
     },
     //关闭弹窗
     handleClose(done){
@@ -486,18 +486,19 @@ export default {
         type: 'warning'
       }).then(() => {
         done()
-        this.dialogImageUrl = ''
         this.open = false
+        this.$refs.BClass_photo.clearFiles()
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消'
-        });
+
       });
     },
     submitFile(){
       this.$refs.BClass_photo.submit()
-    }
+    },
+    cancel(){
+      this.open = false
+      this.$refs.BClass_photo.clearFiles()
+    },
   },
   filters: {
     //过滤器

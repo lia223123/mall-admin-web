@@ -87,7 +87,7 @@ export const constantRouterMap = [
     ]
   },
   {
-    path: '/document',
+    path: '',
     component: Layout,
     redirect: '/document',
     children: [{
@@ -97,17 +97,17 @@ export const constantRouterMap = [
       meta: {title: '标书资料', icon: 'home'}
     }]
   },
-  {
-    path: '',
-    component: Layout,
-    redirect: '/home',
-    children: [{
-      path: 'home',
-      name: 'home',
-      component: () => import('@/views/home/index'),
-      meta: {title: '首页', icon: 'home'}
-    }]
-  },
+  // {
+  //   path: '',
+  //   component: Layout,
+  //   redirect: '/home',
+  //   children: [{
+  //     path: 'home',
+  //     name: 'home',
+  //     component: () => import('@/views/home/index'),
+  //     meta: {title: '首页', icon: 'home'}
+  //   }]
+  // },
   {
     path: '/essential',
     component: Layout,
@@ -135,7 +135,7 @@ export const constantRouterMap = [
         path: 'company',
         name: 'company',
         component: () => import('@/views/essential/company/index'),
-        meta: {title: '单位名称', icon: 'ums-admin'}
+        meta: {title: '学员单位名称', icon: 'ums-admin'}
       },
 
     ],
@@ -181,7 +181,7 @@ export const constantRouterMap = [
         path: 'Identify',
         name: 'Identify',
         component: () => import('@/views/business/Identify/index'),
-        meta: {title: '鉴定机构信息', icon: 'ums-admin'}
+        meta: {title: '工种鉴定机构', icon: 'ums-admin'}
       },
     ]
   },

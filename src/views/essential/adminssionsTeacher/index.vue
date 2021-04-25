@@ -87,7 +87,7 @@
         </el-form-item>
       </el-form>
       <el-form ref="form" :model="form" :rules="rules" label-width="110px" v-if="active === 2" >
-        <el-form-item label="身份证正面" prop="AD_idCard01" size="small">
+        <el-form-item label="身份证" prop="AD_idCard01" size="small">
           <el-upload
             action=""
             class="upload-demo"
@@ -95,26 +95,9 @@
             ref="AD_idCard01"
             :limit="1"
             :http-request="handleBeforeCard"
-            :auto-upload="false"
-            :disabADd="idcard01"
-            :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="身份证反面" prop="AD_idCard02">
-          <el-upload
-            action=""
-            ref="AD_idCard02"
-            class="upload-demo"
-            list-type="picture"
-            :limit="1"
-            :disabADd="idcard02"
-            :auto-upload="false"
-            :http-request="handleBeforeCard01"
-            :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            :auto-upload="false">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.AD_idCard01">身份证已上传</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="讲课协议合同" prop="AD_contents">
@@ -122,11 +105,11 @@
             action=""
             class="upload-demo"
             ref="AD_contents"
-            :disabADd="contents"
             :limit="1"
             :http-request="handleBeforeCo"
             :auto-upload="false">
-            <el-button slot="trigger" size="small" type="primary" @click="pdUpload">选取文件</el-button>
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.AD_contents">讲课协议已上传</div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -149,6 +132,7 @@ import {DeleteCos, LEupload} from "../../../utils/cos";
 import {Message} from "element-ui";
 import {getAdFile} from "../../../api/studentsInfo/adFile";
 import {addAdTeacher, deleteAdTeacher, getAdTeacher, listAdTeacher} from "../../../api/studentsInfo/adTeacher";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
 
 export default {
   name: "index",
@@ -171,10 +155,6 @@ export default {
       active: 1,
       //预览路径
       dialogImageUrl: '',
-      //是否禁用
-      idcard01: false,
-      idcard02: false,
-      contents: false,
       //查询参数
       query:[
         {name:'招生老师编号',id: 'ADid'},
@@ -208,15 +188,12 @@ export default {
         AD_stu: [
           {required: true, message: "招生人数不能为空", trigger: "blur"}
         ],
-        AD_contents: [
-          {required: true, message: "讲课协议合同未上传", trigger: "blur"}
-        ],
-        AD_idCard01: [
-          {required: true, message: "身份证正面未上传", trigger: "blur"}
-        ],
-        AD_idCard02: [
-          {required: true, message: "身份证反面未上传", trigger: "blur"}
-        ]
+        // AD_contents: [
+        //   {required: true, message: "讲课协议合同未上传", trigger: "blur"}
+        // ],
+        // AD_idCard01: [
+        //   {required: true, message: "身份证正面未上传", trigger: "blur"}
+        // ]
       },
       Secret: {}
     }
@@ -244,14 +221,12 @@ export default {
         AD_bankName: undefined,
         AD_bankCode: undefined,
         AD_idCard01: undefined,
-        AD_idCard02: undefined,
         AD_contents: undefined,
       };
-      this.contents = false
-      this.idcard01 = false
-      this.idcard02 = false
       this.active = 1;
       this.$refs['form'].resetFields();
+      this.$refs.AD_idCard01.clearFiles()
+      this.$refs.AD_contents.clearFiles()
     },
     //查询参数重置
     resetQuery(){
@@ -332,8 +307,16 @@ export default {
     },
     //关闭弹窗
     handleClose(done){
-      done()
-      this.reset()
+      this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.open = false
+        this.resetFW(this.form)
+        this.reset()
+      }).catch(() => {
+      });
     },
     //查询
     handleFind(){
@@ -359,25 +342,18 @@ export default {
     },
     //清除之前上传服务器的数据
     resetFW(obj){
-      getAdFile().then(res=>{
+      getAllFile().then(res=>{
         this.Secret = res.data
       })
-      if(obj.AD_idCard01 !== '' && obj.AD_idCard01 !== undefined){
-        DeleteCos(this.Secret,obj.AD_idCard01).then(res =>{
+      if(obj.AD_idCard01){
+        DeleteCos(this.Secret,obj.AD_idCard01).then(() =>{
           console.log("服务器清理成功")
         }).catch(err=>{
           console.log(err)
         })
       }
-      if(obj.AD_idCard02 !== '' && obj.AD_idCard01 !== undefined ){
-        DeleteCos(this.Secret,obj.AD_idCard02).then(res =>{
-          console.log("服务器清理成功")
-        }).catch(err=>{
-          console.log(err)
-        })
-      }
-      if(obj.AD_contents !== '' && obj.AD_idCard01 !== undefined){
-        DeleteCos(this.Secret,obj.AD_contents).then(res =>{
+      if(obj.AD_contents){
+        DeleteCos(this.Secret,obj.AD_contents).then(() =>{
           console.log("服务器清理成功")
         }).catch(err=>{
           console.log(err)
@@ -405,65 +381,46 @@ export default {
     },
     //提交之前图片上传服务器
     handleBeforeCard(file){
-      getAdFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'ADTeacher/'
         LEupload(Secret,file.file,key).then(res=>{
           this.form.AD_idCard01 = res
-          this.idcard01 = true
           this.$message({
-            message: '上传身份证正面成功',
+            message: '上传身份证成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
-            message: '上传身份证正面失败，请重新上传'+ error,
+            message: '上传身份证失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
-        })
-      })
-    },
-    handleBeforeCard01(file){
-      getAdFile().then(response =>{
-        let Secret = response.data
-        let key = 'ADTeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.AD_idCard02 = res
-          this.$message({
-            message: '上传身份证反面成功',
-            type: 'success',
-            showClose: true
-          })
-          this.idcard02 = true
-        }).catch(error=>{
-          this.$message({
-            message: '上传身份证反面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
+          file.onError()
         })
       })
     },
     handleBeforeCo(file){
-      getAdFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'ADTeacher/'
         LEupload(Secret,file.file,key).then(res=>{
-          this.form.AD_contents = res
-          this.contents = true
+          this.user.AD_contents = res
           this.$message({
             message: '上传协议成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
             message: '上传协议失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
+          file.onError()
         })
       })
     },
@@ -474,15 +431,8 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        if(this.idcard01 === false){
           this.$refs.AD_idCard01.submit()
-        }
-        if (this.idcard02 === false){
-          this.$refs.AD_idCard02.submit()
-        }
-        if(this.contents === false){
           this.$refs.AD_contents.submit()
-        }
       }).catch(() => {
         // this.$message({
         //   type: 'info',
@@ -490,27 +440,6 @@ export default {
         // });
       });
     },
-    //判断上传
-    pdUpload(){
-      if(this.idcard01 === true){
-        Message.warning({
-          message: "身份证正面已上传",
-          showClose: true
-        })
-      }
-      if (this.idcard02 === true){
-        Message.warning({
-          message: "身份证反面已上传",
-          showClose: true
-        })
-      }
-      if(this.contents === true){
-        Message.warning({
-          message: "协议书已上传",
-          showClose: true
-        })
-      }
-    }
   }
 }
 </script>

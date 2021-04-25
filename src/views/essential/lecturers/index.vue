@@ -97,25 +97,9 @@
             :limit="1"
             :http-request="handleBeforeCard"
             :auto-upload="false"
-            :disabled="idcard01"
             :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="身份证反面" prop="LE_idCard02">
-          <el-upload
-            action=""
-            ref="LE_idCard02"
-            class="upload-demo"
-            list-type="picture"
-            :limit="1"
-            :disabled="idcard02"
-            :auto-upload="false"
-            :http-request="handleBeforeCard01"
-            :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <el-button size="small" type="primary" >点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.LE_idCard01">身份证已上传</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="毕业证资料" prop="LE_gc">
@@ -124,13 +108,12 @@
             ref="LE_gc"
             class="upload-demo"
             list-type="picture"
-            :disabled="gc"
             :limit="1"
             :auto-upload="false"
             :http-request="handleBeforeGc"
             :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.LE_gc">毕业证已上传</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="职业资格证" prop="LE_pqc">
@@ -138,14 +121,13 @@
             action=""
             ref="LE_pqc"
             class="upload-demo"
-            :disabled="pqc"
             list-type="picture"
             :limit="1"
             :auto-upload="false"
             :http-request="handleBeforepqc"
             :on-preview="handlePictureCardPreview">
-            <el-button size="small" type="primary" @click="pdUpload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb,只能上传一张图片</div>
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" v-if="this.form.LE_pqc">职业资格证已上传</div>
           </el-upload>
         </el-form-item>
         <el-form-item label="讲课协议合同" prop="LE_contents">
@@ -157,7 +139,7 @@
             :limit="1"
             :http-request="handleBeforeCo"
             :auto-upload="false">
-            <el-button slot="trigger" size="small" type="primary" @click="pdUpload">选取文件</el-button>
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -177,9 +159,9 @@
 <script>
 import {addLecturers, deleteLecturers, getLecturers, listLecturers} from "../../../api/studentsInfo/lecturers";
 import {formatSex} from "../../../utils";
-import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {DeleteCos, LEupload} from "../../../utils/cos";
 import {Message} from "element-ui";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
 
 export default {
   name: "index",
@@ -240,21 +222,6 @@ export default {
         ],
         LE_lev: [
           {required: true, message: "授课范围不能为空", trigger: "blur"}
-        ],
-        LE_contents: [
-          {required: true, message: "讲课协议合同未上传", trigger: "blur"}
-        ],
-        LE_gc: [
-          {required: true, message: "毕业证未上传", trigger: "blur"}
-        ],
-        LE_pqc: [
-          {required: true, message: "职业资格证未上传", trigger: "blur"}
-        ],
-        LE_idCard01: [
-          {required: true, message: "身份证正面未上传", trigger: "blur"}
-        ],
-        LE_idCard02: [
-          {required: true, message: "身份证反面未上传", trigger: "blur"}
         ]
       },
       Secret: {}
@@ -287,13 +254,12 @@ export default {
         LE_pqc: undefined,
         LE_contents: undefined,
       };
-      this.contents = false
-      this.gc = false
-      this.contents = false
-      this.idcard01 = false
-      this.idcard02 = false
       this.active = 1;
       this.$refs['form'].resetFields();
+      this.$refs.LE_idCard01.clearFiles()
+      this.$refs.LE_pqc.clearFiles()
+      this.$refs.LE_contents.clearFiles()
+      this.$refs.LE_gc.clearFiles()
     },
     //查询参数重置
     resetQuery(){
@@ -397,38 +363,38 @@ export default {
     },
     //清除之前上传服务器的数据
     resetFW(obj){
-      getLeFile().then(res=>{
+      getAllFile().then(res=>{
         this.Secret = res.data
       })
-        if(obj.LE_idCard01 !== '' && obj.LE_idCard01 !== undefined){
+        if(obj.LE_idCard01){
           DeleteCos(this.Secret,obj.LE_idCard01).then(res =>{
             console.log("服务器清理成功")
           }).catch(err=>{
             console.log(err)
           })
         }
-        if(obj.LE_idCard02 !== '' && obj.LE_idCard01 !== undefined ){
+        if(obj.LE_idCard02){
           DeleteCos(this.Secret,obj.LE_idCard02).then(res =>{
             console.log("服务器清理成功")
           }).catch(err=>{
             console.log(err)
           })
         }
-        if(obj.LE_gc !== '' && obj.LE_idCard01 !== undefined){
+        if(obj.LE_gc){
           DeleteCos(this.Secret,obj.LE_gc).then(res =>{
             console.log("服务器清理成功")
           }).catch(err=>{
             console.log(err)
           })
         }
-        if(obj.LE_contents !== '' && obj.LE_idCard01 !== undefined){
+        if(obj.LE_contents){
           DeleteCos(this.Secret,obj.LE_contents).then(res =>{
             console.log("服务器清理成功")
           }).catch(err=>{
             console.log(err)
           })
         }
-        if(obj.LE_pqc !== '' && obj.LE_idCard01 !== undefined){
+        if(obj.LE_pqc){
           DeleteCos(this.Secret,obj.LE_pqc).then(res =>{
             console.log("服务器清理成功")
           }).catch(err=>{
@@ -458,107 +424,89 @@ export default {
     },
     //提交之前图片上传服务器
     handleBeforeCard(file){
-      getLeFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'LETeacher/'
         LEupload(Secret,file.file,key).then(res=>{
           this.form.LE_idCard01 = res
-          this.idcard01 = true
           this.$message({
-            message: '上传身份证正面成功',
+            message: '上传身份证成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
-            message: '上传身份证正面失败，请重新上传'+ error,
+            message: '上传身份证失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
-        })
-      })
-    },
-    handleBeforeCard01(file){
-      getLeFile().then(response =>{
-        let Secret = response.data
-        let key = 'LETeacher/'
-        LEupload(Secret,file.file,key).then(res=>{
-          this.form.LE_idCard02 = res
-          this.$message({
-            message: '上传身份证反面成功',
-            type: 'success',
-            showClose: true
-          })
-          this.idcard02 = true
-        }).catch(error=>{
-          this.$message({
-            message: '上传身份证反面失败，请重新上传'+ error,
-            type: 'warning',
-            showClose: true
-          })
+          file.onError()
         })
       })
     },
     handleBeforeGc(file){
-      getLeFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'LETeacher/'
         LEupload(Secret,file.file,key).then(res=>{
           this.form.LE_gc = res
-          this.gc = true
           this.$message({
             message: '上传毕业证成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
             message: '上传身毕业证失败，请重新上传'+ error,
             type: 'warning'
           })
+          file.onError()
         })
       })
     },
     handleBeforepqc(file){
-      getLeFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'LETeacher/'
         LEupload(Secret,file.file,key).then(res=>{
-          console.log(res);
           this.form.LE_pqc = res
-          this.pqc = true
           this.$message({
             message: '上传资格证成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
             message: '上传资格证失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
+          file.onError()
         })
       })
     },
     handleBeforeCo(file){
-      getLeFile().then(response =>{
+      getAllFile().then(response =>{
         let Secret = response.data
         let key = 'LETeacher/'
         LEupload(Secret,file.file,key).then(res=>{
           this.form.LE_contents = res
-          this.contents = true
           this.$message({
             message: '上传协议成功',
             type: 'success',
             showClose: true
           })
+          file.onSuccess()
         }).catch(error=>{
           this.$message({
             message: '上传协议失败，请重新上传'+ error,
             type: 'warning',
             showClose: true
           })
+          file.onError()
         })
       })
     },
@@ -569,21 +517,10 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        if(this.idcard01 === false){
           this.$refs.LE_idCard01.submit()
-        }
-        if (this.idcard02 === false){
-          this.$refs.LE_idCard02.submit()
-        }
-        if (this.pqc === false){
           this.$refs.LE_pqc.submit()
-        }
-        if(this.contents === false){
           this.$refs.LE_contents.submit()
-        }
-        if(this.gc === false){
           this.$refs.LE_gc.submit()
-        }
       }).catch(() => {
         // this.$message({
         //   type: 'info',
@@ -591,24 +528,6 @@ export default {
         // });
       });
     },
-    //判断上传
-    pdUpload(){
-      if(this.idcard01 === true){
-        Message.warning("身份证正面已上传")
-      }
-      if (this.idcard02 === true){
-        Message.warning("身份证反面已上传")
-      }
-      if (this.pqc === true){
-        Message.warning("资格证已上传")
-      }
-      if(this.contents === true){
-        Message.warning("协议书已上传")
-      }
-      if(this.gc === true){
-        Message.warning("毕业证已上传")
-      }
-    }
   }
 }
 </script>

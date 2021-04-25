@@ -56,7 +56,7 @@ export function reLoad(Secret,file,key){
     cos.putObject({
       Bucket: 'filegchumandatas01-1304877674',
       Region:  'ap-nanjing',
-      Key:key,
+      Key: key,
       Body: file,
       onProgress: function(progressData) {
         console.log(JSON.stringify(progressData));

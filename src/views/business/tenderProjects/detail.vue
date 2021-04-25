@@ -65,14 +65,14 @@
             <el-tab-pane label="中标项目基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="DidCard"  >标书下载</el-button>
-                  <el-button @click="()=>{ this.open = true}">标书上传</el-button>
+                  <el-button @click="DidCard" type="primary">标书下载</el-button>
+                  <el-button @click="()=>{ this.open = true}" type="primary">标书上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>
-              <el-dialog title="标书上传" :visible.sync="open" width="600px" append-to-body  :before-close="handleClose">
+              <el-dialog title="标书上传" :visible.sync="open" width="600px" append-to-body :before-close="handleClose">
                 <el-form ref="form" :model="form" :rules="rules" label-width="110px">
                   <el-form-item label="标书" prop="tp_url">
                     <el-upload
@@ -82,8 +82,7 @@
                       list-type="text"
                       :limit="1"
                       :auto-upload="false"
-                      :http-request="DidLoad"
-                      :on-preview="handlePictureCardPreview">
+                      :http-request="DidLoad">
                       <el-button size="small" type="primary">点击上传</el-button>
                       <div slot="tip" class="el-upload__tip" v-if="this.Class.tp_url">标书已上传</div>
                     </el-upload>
@@ -153,6 +152,7 @@ import {Message} from "element-ui";
 import {getBanFile} from "../../../api/studentsInfo/banFile"
 import {editTenderProject, getTenderProject} from "../../../api/tenderproject/tenderProject";
 import {tenderCompany} from "../../../utils";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
 
 export default {
   name: "detail",
@@ -201,7 +201,6 @@ export default {
       id: '',
       Secret: {},
       //需要的参数
-      dialogImageUrl: '',
       open: false,
       tenderCompany: [
         {name: '人社局',id: 1},
@@ -224,7 +223,7 @@ export default {
     },
     //下载文件
     DidCard(){
-      getBanFile().then(res =>{
+      getAllFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm('是否下载项目编号为' + this.Class.tp_projectCode + "的标书？","警告", {
@@ -267,7 +266,7 @@ export default {
     },
     //班级照上传
     DidLoad(file){
-      getBanFile().then(res =>{
+      getAllFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm("是否上传标书？已有标书再上传会覆盖上一个标书",'警告',{
@@ -292,7 +291,7 @@ export default {
             })
           })
         }else {
-          reLoad(this.Secret,file.file,this.Class.tp_url).then(res =>{
+          reLoad(this.Secret, file.file, this.Class.tp_url).then(res =>{
             this.$message({
               message: '上传标书成功',
               type: 'success',
@@ -308,10 +307,6 @@ export default {
         }
       })
     },
-    //预览
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-    },
     //关闭弹窗
     handleClose(done){
       this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
@@ -319,8 +314,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.dialogImageUrl = ''
-        this.open = false
+        this.$refs.BClass_photo.clearFiles()
         done()
       }).catch(() => {
         this.$message({
@@ -334,7 +328,7 @@ export default {
     },
     cancel(){
       this.open = false
-      this.dialogImageUrl = ''
+      this.$refs.BClass_photo.clearFiles()
     }
   },
   //过滤器
