@@ -37,7 +37,7 @@
 <!--      </el-table>-->
 <!--    </div>-->
     <div>
-        <el-button @click="exportWord">导出花名册</el-button>
+        <el-button @click="exportWord">导出出勤表</el-button>
     </div>
   </div>
 </template>
@@ -66,40 +66,45 @@ export default {
         tableData: [{
           id: 1,
           name: 'test',
-          gender: '男'
+          // gender: '男',
+          // phone: '11111111111',
+          // ADName: '招生老师',
+          // ADPhone: '22222222222'
         },{
           id: 2,
           name: 'test',
-          gender: '男'
-        },{
-          id: 3,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 4,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 5,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 6,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 7,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 8,
-          name: 'test',
-          gender: '男'
-        },{
-          id: 9,
-          name: 'test',
-          gender: '男'
-        },]
+          // gender: '男'
+        },
+        //   {
+        //   id: 3,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 4,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 5,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 6,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 7,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 8,
+        //   name: 'test',
+        //   gender: '男'
+        // },{
+        //   id: 9,
+        //   name: 'test',
+        //   gender: '男'
+        // },
+        ]
       }
     },
     created(){
@@ -198,29 +203,65 @@ export default {
       //   xlsx.writeFile(book,`学生信息模板.xls`);
       // }
       exportWord(){
-        PizZipUtils.getBinaryContent("static/roster.docx", (error, content)=> {
+        // PizZipUtils.getBinaryContent("static/word/roster.docx", (error, content)=> {
+        //   if(error){
+        //     throw error
+        //   }
+        //   let zip = new PizZip(content)
+        //   let doc = new Docxtemplater().loadZip(zip)
+        //   doc.setData({
+        //     title: 'test',
+        //     table: this.tableData
+        //   })
+        // try{
+        //   doc.render()
+        // }catch (error) {
+        //   this.$message.error('导出花名册失败')
+        //   console.log(error)
+        //   throw error
+        // }
+        // let out = doc.getZip().generate({
+        //   type: "blob",
+        //   mimeType:
+        //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        // }); //Output the document using Data-URI
+        // saveAs(out, "output.docx");
+        // })
+
+        PizZipUtils.getBinaryContent("static/word/Attendance.docx", (error, content)=>{
           if(error){
             throw error
           }
           let zip = new PizZip(content)
           let doc = new Docxtemplater().loadZip(zip)
+
           doc.setData({
             title: 'test',
-            table: this.tableData
+            table: this.tableData,
+            loop: [
+              {
+                startTime: '3月18日'
+              },
+              {
+                startTime: '3月19日'
+              }
+            ],
+            company: '高创公司',
+            time: '3月18日-3月19日',
+            major: '茶艺师',
+            grade: ''
           })
-        try{
-          doc.render()
-        }catch (error) {
-          this.$message.error('导出花名册失败')
-          console.log(error)
-          throw error
-        }
-        let out = doc.getZip().generate({
-          type: "blob",
-          mimeType:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        }); //Output the document using Data-URI
-        saveAs(out, "output.docx");
+          try{
+            doc.render()
+          }catch (e) {
+            console.log(e)
+            throw e
+          }
+          let out = doc.getZip().generate({
+            type: 'blob',
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          });
+          saveAs(out, "test.docx")
         })
       },
     },

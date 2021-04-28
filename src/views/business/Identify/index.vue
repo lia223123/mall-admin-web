@@ -153,11 +153,9 @@ export default {
     },
     //修改数据
     handleUpdate(row){
-      getIdentify(row.id).then(res =>{
-        this.form = res.data;
+        this.form = row;
         this.open = true;
         this.title = '修改人社局信息';
-      })
     },
     //删除数据
     handleDelete(row){
@@ -189,6 +187,7 @@ export default {
     submitForm(){
       this.$refs["form"].validate(valid => {
         if (valid) {
+          console.log(this.form)
           if (this.form.id !== undefined) {
             editIdentify(this.form).then(response => {
               this.$message({
@@ -198,11 +197,8 @@ export default {
               this.open = false;
               this.getList();
               this.reset();
-            }).catch(()=> {
-              this.$message({
-                message: "机构编号已存在",
-                type: 'warning'
-              });
+            }).catch((err)=> {
+              console.log(err)
             });
           } else {
             addIdentify(this.form).then(response => {

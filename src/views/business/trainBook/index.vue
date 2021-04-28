@@ -171,12 +171,10 @@ export default {
     },
     //修改数据
     handleUpdate(row){
-      getTrainBook(row.id).then(res =>{
-        this.form = res.data;
+        this.form = row;
         this.form.tot_level = this.form.tot_level.toString()
         this.open = true;
         this.title = '修改人社局信息';
-      })
     },
     //删除数据
     handleDelete(row){
@@ -218,10 +216,7 @@ export default {
               this.getList();
               this.reset();
             }).catch(()=> {
-              this.$message({
-                message: "证书编号已存在",
-                type: 'warning'
-              });
+
             });
           } else {
             addTrainBook(this.form).then(response => {
