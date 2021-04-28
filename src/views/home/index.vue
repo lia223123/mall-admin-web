@@ -1,19 +1,56 @@
 <template>
   <div class="app-container">
-    <el-autocomplete
-      class="inline-input"
-      v-model="state1"
-      :fetch-suggestions="querySearch"
-      placeholder="请输入内容"
-      @select="handleSelect"
-    ></el-autocomplete>
+<!--    <div>-->
+<!--      <el-upload-->
+<!--        class="upload-demo"-->
+<!--        ref="upload"-->
+<!--        accept=".xls,.xlsx"-->
+<!--        action="json"-->
+<!--        :on-change="handle"-->
+<!--        :auto-upload="false">-->
+<!--        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>-->
+<!--        &lt;!&ndash;      <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>&ndash;&gt;-->
+<!--        <div slot="tip" class="el-upload__tip">只能上传.xls,.xlsx</div>-->
+<!--      </el-upload>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <el-button @click="daochu">模板导出</el-button>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <el-table :data="restaurants" border  @selection-change="handleSelectionChange">-->
+<!--        <el-table-column-->
+<!--          type="selection"-->
+<!--          width="55">-->
+<!--        </el-table-column>-->
+<!--        <el-table-column label="学员姓名" align="center" prop="STU_name"/>-->
+<!--        <el-table-column label="性别" align="center" prop="STU_gender"/>-->
+<!--        <el-table-column label="电话" align="center" prop="STU_phone"/>-->
+<!--        <el-table-column label="年龄" align="center" prop="STU_age"/>-->
+<!--        <el-table-column label="民族" align="center" prop="STU_nation"/>-->
+<!--        <el-table-column label="文化程度" align="center" prop="STU_education" />-->
+<!--        <el-table-column label="专业" align="center" prop="STU_major"/>-->
+<!--        <el-table-column label="政治面貌" align="center" prop="STU_political_affiliation"/>-->
+<!--        <el-table-column label="人员类别" align="center" prop="STU_personnel_category"/>-->
+<!--        <el-table-column label="健康状况" align="center" prop="STU_health_status"/>-->
+<!--        <el-table-column label="归属单位" align="center" prop="STU_employer"/>-->
+<!--        <el-table-column label="建档立卡" align="center" prop="STU_filed_account"/>-->
+<!--      </el-table>-->
+<!--    </div>-->
+    <div>
+        <el-button @click="exportWord">导出花名册</el-button>
+    </div>
   </div>
 </template>
 
 <script>
-import {LEDownLoad, LEupload,} from "../../utils/cos";
-import {getLeFile} from "../../api/studentsInfo/leFile";
-  export default {
+import xlsx from "xlsx"
+import {ArrayCompare, readFile, stuCharacter} from "../../utils/index";
+import {Message} from "element-ui";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import {saveAs} from 'file-saver';
+import PizZipUtils from 'pizzip/utils/index'
+export default {
     name: 'home',
     data() {
       return {
@@ -25,82 +62,168 @@ import {getLeFile} from "../../api/studentsInfo/leFile";
         Secret: {},
         state1: '',
         restaurants: [],
+        selectionList: [],
+        tableData: [{
+          id: 1,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 2,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 3,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 4,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 5,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 6,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 7,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 8,
+          name: 'test',
+          gender: '男'
+        },{
+          id: 9,
+          name: 'test',
+          gender: '男'
+        },]
       }
     },
     created(){
 
     },
     methods:{
-      querySearch(queryString, cb) {
-        let restaurants = this.restaurants;
-        let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-        // 调用 callback 返回建议列表的数据
-        cb(results);
+      // async handle(ev){
+      //   let file = ev.raw
+      //   if(!file) return;
+      //   let A = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S']
+      //   let NewArr = []
+      //   let OldArr = [
+      //     '学员姓名',
+      //     '身份证号',
+      //     '学员类型',
+      //     '性别',
+      //     '所属民族',
+      //     '所属单位',
+      //     '文化程度',
+      //     '政治面貌',
+      //     '现居地址',
+      //     '户籍详细地址',
+      //     '手机号码',
+      //     '就业状态',
+      //     '是否属于扶贫建档立卡户',
+      //     '年龄',
+      //     '专业',
+      //     '保险类型',
+      //     '健康状态',
+      //     '招生老师姓名',
+      //     '招生老师身份证号',
+      //   ]
+      //   //读取file的数据
+      //   let data = await readFile(file);
+      //   let workbook = xlsx.read(data, {type: "binary"}),
+      //     worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      //   A.forEach(item =>{
+      //     NewArr.push(worksheet[item+'1'].v)
+      //   })
+      //   if(ArrayCompare(NewArr, OldArr)){
+      //     data = xlsx.utils.sheet_to_json(worksheet)
+      //     //转换字段
+      //     let arr = [];
+      //     data.forEach(item =>{
+      //       let obj = {};
+      //       for (let key in stuCharacter) {
+      //         if(!stuCharacter.hasOwnProperty(key)) break;
+      //         let v = stuCharacter[key],
+      //           text = v.text,
+      //           type = v.type;
+      //         v = item[text] || '';
+      //         type = "string" ? v = String(v) : null;
+      //         obj[key] = v
+      //       }
+      //       arr.push(obj);
+      //     });
+      //     this.restaurants = arr
+      //   }else {
+      //     Message.warning({
+      //       message: '请上传系统下载的模板',
+      //       showClose: true
+      //     })
+      //   }
+      //
+      // },
+      // handleSelectionChange(){
+      //
+      // },
+      // daochu(){
+      //   let arr = [
+      //     {
+      //       '学员姓名': null,
+      //       '身份证号': null,
+      //       '学员类型': null,
+      //       '性别': null,
+      //       '所属民族': null,
+      //       '所属单位': null,
+      //       '文化程度': null,
+      //       '政治面貌': null,
+      //       '现居地址': null,
+      //       '户籍详细地址': null,
+      //       '手机号码': null,
+      //       '就业状态': null,
+      //       '是否属于扶贫建档立卡户': null,
+      //       '年龄': null,
+      //       '专业': null,
+      //       '保险类型': null,
+      //       '健康状态': null,
+      //       '招生老师姓名': null,
+      //       '招生老师身份证号': null,
+      //     }
+      //   ]
+      //   let sheet = xlsx.utils.json_to_sheet(arr),
+      //     book = xlsx.utils.book_new();
+      //   xlsx.utils.book_append_sheet(book, sheet, "sheet1");
+      //   xlsx.writeFile(book,`学生信息模板.xls`);
+      // }
+      exportWord(){
+        PizZipUtils.getBinaryContent("static/roster.docx", (error, content)=> {
+          if(error){
+            throw error
+          }
+          let zip = new PizZip(content)
+          let doc = new Docxtemplater().loadZip(zip)
+          doc.setData({
+            title: 'test',
+            table: this.tableData
+          })
+        try{
+          doc.render()
+        }catch (error) {
+          this.$message.error('导出花名册失败')
+          console.log(error)
+          throw error
+        }
+        let out = doc.getZip().generate({
+          type: "blob",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }); //Output the document using Data-URI
+        saveAs(out, "output.docx");
+        })
       },
-      createFilter(queryString) {
-        return (restaurant) => {
-          return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-        };
-      },
-      loadAll() {
-        return [
-          { "value": "三全鲜食（北新泾店）", "address": "长宁区新渔路144号" },
-          { "value": "Hot honey 首尔炸鸡（仙霞路）", "address": "上海市长宁区淞虹路661号" },
-          { "value": "新旺角茶餐厅", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" },
-          { "value": "泷千家(天山西路店)", "address": "天山西路438号" },
-          { "value": "胖仙女纸杯蛋糕（上海凌空店）", "address": "上海市长宁区金钟路968号1幢18号楼一层商铺18-101" },
-          { "value": "贡茶", "address": "上海市长宁区金钟路633号" },
-          { "value": "豪大大香鸡排超级奶爸", "address": "上海市嘉定区曹安公路曹安路1685号" },
-          { "value": "茶芝兰（奶茶，手抓饼）", "address": "上海市普陀区同普路1435号" },
-          { "value": "十二泷町", "address": "上海市北翟路1444弄81号B幢-107" },
-          { "value": "星移浓缩咖啡", "address": "上海市嘉定区新郁路817号" },
-          { "value": "阿姨奶茶/豪大大", "address": "嘉定区曹安路1611号" },
-          { "value": "新麦甜四季甜品炸鸡", "address": "嘉定区曹安公路2383弄55号" },
-          { "value": "Monica摩托主题咖啡店", "address": "嘉定区江桥镇曹安公路2409号1F，2383弄62号1F" },
-          { "value": "浮生若茶（凌空soho店）", "address": "上海长宁区金钟路968号9号楼地下一层" },
-          { "value": "NONO JUICE  鲜榨果汁", "address": "上海市长宁区天山西路119号" },
-          { "value": "CoCo都可(北新泾店）", "address": "上海市长宁区仙霞西路" },
-          { "value": "快乐柠檬（神州智慧店）", "address": "上海市长宁区天山西路567号1层R117号店铺" },
-          { "value": "Merci Paul cafe", "address": "上海市普陀区光复西路丹巴路28弄6号楼819" },
-          { "value": "猫山王（西郊百联店）", "address": "上海市长宁区仙霞西路88号第一层G05-F01-1-306" },
-          { "value": "枪会山", "address": "上海市普陀区棕榈路" },
-          { "value": "纵食", "address": "元丰天山花园(东门) 双流路267号" },
-          { "value": "钱记", "address": "上海市长宁区天山西路" },
-          { "value": "壹杯加", "address": "上海市长宁区通协路" },
-          { "value": "唦哇嘀咖", "address": "上海市长宁区新泾镇金钟路999号2幢（B幢）第01层第1-02A单元" },
-          { "value": "爱茜茜里(西郊百联)", "address": "长宁区仙霞西路88号1305室" },
-          { "value": "爱茜茜里(近铁广场)", "address": "上海市普陀区真北路818号近铁城市广场北区地下二楼N-B2-O2-C商铺" },
-          { "value": "鲜果榨汁（金沙江路和美广店）", "address": "普陀区金沙江路2239号金沙和美广场B1-10-6" },
-          { "value": "开心丽果（缤谷店）", "address": "上海市长宁区威宁路天山路341号" },
-          { "value": "超级鸡车（丰庄路店）", "address": "上海市嘉定区丰庄路240号" },
-          { "value": "妙生活果园（北新泾店）", "address": "长宁区新渔路144号" },
-          { "value": "香宜度麻辣香锅", "address": "长宁区淞虹路148号" },
-          { "value": "凡仔汉堡（老真北路店）", "address": "上海市普陀区老真北路160号" },
-          { "value": "港式小铺", "address": "上海市长宁区金钟路968号15楼15-105室" },
-          { "value": "蜀香源麻辣香锅（剑河路店）", "address": "剑河路443-1" },
-          { "value": "北京饺子馆", "address": "长宁区北新泾街道天山西路490-1号" },
-          { "value": "饭典*新简餐（凌空SOHO店）", "address": "上海市长宁区金钟路968号9号楼地下一层9-83室" },
-          { "value": "焦耳·川式快餐（金钟路店）", "address": "上海市金钟路633号地下一层甲部" },
-          { "value": "动力鸡车", "address": "长宁区仙霞西路299弄3号101B" },
-          { "value": "浏阳蒸菜", "address": "天山西路430号" },
-          { "value": "四海游龙（天山西路店）", "address": "上海市长宁区天山西路" },
-          { "value": "樱花食堂（凌空店）", "address": "上海市长宁区金钟路968号15楼15-105室" },
-          { "value": "壹分米客家传统调制米粉(天山店)", "address": "天山西路428号" },
-          { "value": "福荣祥烧腊（平溪路店）", "address": "上海市长宁区协和路福泉路255弄57-73号" },
-          { "value": "速记黄焖鸡米饭", "address": "上海市长宁区北新泾街道金钟路180号1层01号摊位" },
-          { "value": "红辣椒麻辣烫", "address": "上海市长宁区天山西路492号" },
-          { "value": "(小杨生煎)西郊百联餐厅", "address": "长宁区仙霞西路88号百联2楼" },
-          { "value": "阳阳麻辣烫", "address": "天山西路389号" },
-          { "value": "南拳妈妈龙虾盖浇饭", "address": "普陀区金沙江路1699号鑫乐惠美食广场A13" }
-        ];
-      },
-      handleSelect(item) {
-        console.log(item);
-      }
     },
-    mounted() {
-      this.restaurants = this.loadAll();
-    }
   }
 </script>
 

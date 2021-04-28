@@ -305,6 +305,8 @@ import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {Message} from "element-ui";
 import {listTrainBook} from "../../../api/studentsInfo/trainBook";
+import {getAllFile} from "../../../api/studentsInfo/allFile";
+import {listStuAndBanAndAD} from "../../../api/waijian";
 
 export default {
   name: "detail",
@@ -360,7 +362,9 @@ export default {
       dialogImageUrl: '',
       books: {},
       //取消按钮的禁用
-      cancelIsDes: false
+      cancelIsDes: false,
+      //其他参数
+      banJi: {}
     }
   },
   created() {
@@ -371,8 +375,12 @@ export default {
       this.Teacher = res.data.results
     });
     let obj = {
-      tr_stu: id
+      tr_stu: id,
+      student: id
     }
+    listStuAndBanAndAD(obj).then(res =>{
+      console.log(res.data.results)
+    });
     listTrainBook(obj).then(res =>{
       this.books = res.data.results
     });
@@ -388,7 +396,7 @@ export default {
     },
     //下载文件
     DidCard(){
-      getStuFile().then(res =>{
+      getAllFile().then(res =>{
         this.Secret = res.data
       })
       this.$confirm('是否下载学员身份证为' + this.user.STU_sf_id + "的学员身份证正面？","警告", {
@@ -413,7 +421,7 @@ export default {
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        getStuFile().then(res =>{
+        getAllFile().then(res =>{
           this.Secret = res.data
         })
         DownLoadCos(this.Secret,this.user.STU_photoIdf).then(res=>{
@@ -433,7 +441,7 @@ export default {
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        getStuFile().then(res =>{
+        getAllFile().then(res =>{
           this.Secret = res.data
         })
         DownLoadCos(this.Secret,this.user.STU_photo).then(res=>{
@@ -454,7 +462,7 @@ export default {
     //提交之前图片上传服务器
     handleBeforeCard(file){
       if(!this.user.STU_photoIdz){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -471,11 +479,12 @@ export default {
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         })
       }
       else{
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.user.STU_photoIdz).then(res=>{
             this.$message({
@@ -483,19 +492,21 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证正面失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         })
       }
     },
     handleBeforeCard01(file){
       if(!this.user.STU_photoIdf){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -512,10 +523,11 @@ export default {
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         })
       }else {
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.user.STU_photoIdf).then(res=>{
             this.$message({
@@ -523,12 +535,14 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传身份证反面失败，请重新上传'+ error,
               type: 'warning',
               showClose: true
             })
+            file.onError()
           })
         })
       }
@@ -536,7 +550,7 @@ export default {
     },
     handleBeforeGc(file){
       if(!this.user.STU_photo){
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           let key = 'Student/'
           LEupload(Secret,file.file,key).then(res=>{
@@ -552,10 +566,11 @@ export default {
               message: '上传学生图片失败，请重新上传'+ error,
               type: 'warning'
             })
+            file.onError()
           })
         })
       }else{
-        getStuFile().then(response =>{
+        getAllFile().then(response =>{
           let Secret = response.data
           reLoad(Secret,file.file,this.user.STU_photo).then(res=>{
             this.$message({
@@ -563,11 +578,13 @@ export default {
               type: 'success',
               showClose: true
             })
+            file.onSuccess()
           }).catch(error=>{
             this.$message({
               message: '上传学生图片失败，请重新上传'+ error,
               type: 'warning'
             })
+            file.onError()
           })
         })
       }
@@ -598,21 +615,18 @@ export default {
         type: 'warning'
       }).then(() => {
         done()
-        this.imgOpen = false
+        this.resetFile1()
         })
       },
     cancel(){
       this.imgOpen = false
+      this.resetFile1()
     },
     //上传完成后清除预览
     resetFile1(){
       this.$refs.LE_idCard01.clearFiles()
-    },
-    resetFile2(){
-      this.$refs.LE_idCard02.clearFiles()
-    },
-    resetFile3(){
       this.$refs.LE_gc.clearFiles()
+      this.$refs.LE_idCard02.clearFiles()
     },
     //保存
     submit(){

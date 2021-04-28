@@ -162,7 +162,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog  title="新增中标项目" :visible.sync="ProOpen" width="800px" append-to-body  :before-close="handleClose">
+    <el-dialog  title="新增中标项目" :visible.sync="ProOpen" width="800px" append-to-body :before-close="handleClose">
       <el-form ref="Proform" :model="Proform" :rules="ProRules">
         <el-row>
           <el-col :span="12">

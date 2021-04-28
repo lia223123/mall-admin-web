@@ -152,3 +152,105 @@ export function ClassStatus(num){
 
   }
 }
+//数组比较
+export function ArrayCompare(newArray,oldArray){
+  if(newArray.length !== oldArray.length){
+    return false
+  }
+  for(let i = 0;i < newArray.length; i++){
+    if(newArray[i] !== oldArray[i]){
+      return false
+    }
+  }
+  return true
+}
+
+//将文件按照二进制进行读取
+export function readFile(file){
+  return new Promise(resolve =>{
+    let reader = new FileReader();
+    reader.readAsBinaryString(file);
+    reader.onload = ev => {
+      resolve (ev.target.result)
+    }
+  })
+}
+//学生信息字段对应表
+export let stuCharacter = {
+  STU_name: {
+    text: '学员姓名',
+    type: 'string'
+  },
+  STU_sf_id: {
+    text: '身份证号',
+    type: 'string'
+  },
+  STU_gender: {
+    text: '性别',
+    type: 'string'
+  },
+  STU_age: {
+    text: '年龄',
+    type: 'string'
+  },
+  STU_phone: {
+    text: '手机号码',
+    type: 'string'
+  },
+  STU_nation: {
+    text: '所属民族',
+    type: 'string'
+  },
+  STU_employment_status: {
+    text: '就业状态',
+    type: 'string'
+  },
+  STU_detail_address: {
+    text: '户籍详细地址',
+    type: 'string'
+  },
+  STU_current_address: {
+    text: '现居地址',
+    type: 'string'
+  },
+  STU_education: {
+    text: '文化程度',
+    type: 'string'
+  },
+  STU_major: {
+    text: '专业',
+    type: 'string'
+  },
+  STU_political_affiliation: {
+    text: '政治面貌',
+    type: 'string'
+  },
+  STU_personnel_category: {
+    text: '学员类型',
+    type: 'string'
+  },
+  STU_health_status: {
+    text: '健康状态',
+    type: 'string'
+  },
+  STU_insureType: {
+    text: '保险类型',
+    type: 'string'
+  },
+  STU_employer: {
+    text: '归属单位',
+    type: 'string'
+  },
+  STU_filed_account: {
+    text: '是否属于扶贫建档立卡户',
+    type: 'string'
+  },
+  AD_cid: {
+    text: '招生老师身份证号',
+    type: 'string'
+  },
+  AD_name: {
+    text: '招生老师姓名',
+    type: 'string'
+  },
+}

@@ -86,28 +86,28 @@ export const constantRouterMap = [
       }
     ]
   },
-  {
-    path: '',
-    component: Layout,
-    redirect: '/document',
-    children: [{
-      path: 'document',
-      name: 'document',
-      component: ()=>import('@/views/document/index'),
-      meta: {title: '标书资料', icon: 'home'}
-    }]
-  },
   // {
   //   path: '',
   //   component: Layout,
-  //   redirect: '/home',
+  //   redirect: '/document',
   //   children: [{
-  //     path: 'home',
-  //     name: 'home',
-  //     component: () => import('@/views/home/index'),
-  //     meta: {title: '首页', icon: 'home'}
+  //     path: 'document',
+  //     name: 'document',
+  //     component: ()=>import('@/views/document/index'),
+  //     meta: {title: '标书资料', icon: 'home'}
   //   }]
   // },
+  {
+    path: '',
+    component: Layout,
+    redirect: '/home',
+    children: [{
+      path: 'home',
+      name: 'home',
+      component: () => import('@/views/home/index'),
+      meta: {title: '首页', icon: 'home'}
+    }]
+  },
   {
     path: '/essential',
     component: Layout,
