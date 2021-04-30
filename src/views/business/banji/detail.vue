@@ -113,8 +113,10 @@
             <el-tab-pane label="班级基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="DidCard"  >班级集体照下载</el-button>
                   <el-button @click="()=>{ this.open = true }"  >班级集体照上传</el-button>
+                  <el-button @click="()=>{ this.ClassOpen = true}">课程表上传</el-button>
+                  <el-button @click="DidCard">班级集体照下载</el-button>
+                  <el-button @click="SeeClass">课程表查看</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -138,6 +140,28 @@
                 </el-form>
                 <div class="el-dialog__footer">
                   <el-button type="primary" @click="submitFile">上传服务器</el-button>
+                  <el-button type="primary" @click="submit">确定</el-button>
+                  <el-button type="primary" @click="cancel">取消</el-button>
+                </div>
+              </el-dialog>
+              <el-dialog title="课程表上传" :visible.sync="ClassOpen" width="600px" append-to-body  :before-close="handleClose">
+                <el-form ref="form" :model="form" :rules="rules" label-width="110px">
+                  <el-form-item label="班级集体照" prop="BClass_photo">
+                    <el-upload
+                      action=""
+                      ref="BCourseTable"
+                      class="upload-demo"
+                      list-type="text"
+                      :limit="1"
+                      :auto-upload="false"
+                      :http-request="ClassLoad">
+                      <el-button size="small" type="primary">点击上传</el-button>
+                      <div slot="tip" class="el-upload__tip" v-if="this.Class.BCourseTable">课程表已上传</div>
+                    </el-upload>
+                  </el-form-item>
+                </el-form>
+                <div class="el-dialog__footer">
+                  <el-button type="primary" @click="submitFile1">上传服务器</el-button>
                   <el-button type="primary" @click="submit">确定</el-button>
                   <el-button type="primary" @click="cancel">取消</el-button>
                 </div>
@@ -247,7 +271,7 @@
 <script>
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {banjiType, formatSex, isNot, level} from "../../../utils";
-import {DownLoadCos, LEupload, reLoad} from "../../../utils/cos";
+import {DownLoadCos, getHead, LEupload, reLoad} from "../../../utils/cos";
 import {getLeFile} from "../../../api/studentsInfo/leFile";
 import {editBanJi, getBanJi} from "../../../api/studentsInfo/banji";
 import {Message} from "element-ui";
@@ -369,6 +393,7 @@ export default {
       lecturers: {},
       dialogImageUrl: '',
       open: false,
+      ClassOpen: false
     }
   },
   created() {
@@ -385,6 +410,7 @@ export default {
       getBanJi(id).then(res =>{
         this.Class = res.data
         this.Class.BClass_name = this.Class.BClass_name.toString()
+        console.log(this.Class)
       })
     },
     //下载文件
@@ -406,6 +432,17 @@ export default {
             showClose: true
           })
         })
+      })
+    },
+    //查看课程表
+    SeeClass(){
+      getAllFile().then(res =>{
+        this.Secret = res.data
+      })
+      DownLoadCos(this.Secret, "BanJi/d80f66fd1619661774974.xls").then(res =>{
+        console.log(res)
+      }).catch(err=>{
+        console.log(err)
       })
     },
     //保存
@@ -478,6 +515,51 @@ export default {
         }
       })
     },
+    ClassLoad(file){
+      getAllFile().then(res =>{
+        this.Secret = res.data
+      })
+      this.$confirm("是否上传课程表",'警告',{
+        confirmButtonText: '确定',
+        cancelButtonText: "取消",
+        type: 'warning',
+      }).then(() =>{
+        if(!this.Class.BCourseTable){
+          LEupload(this.Secret,file.file,"BanJi/").then(res=>{
+            this.Class.BCourseTable = res
+            this.$message({
+              message: '上传课程表成功',
+              type: 'success',
+              showClose: true
+            })
+            file.onSuccess()
+          }).catch(error=>{
+            this.$message({
+              message: '上传课程表失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+            file.onError()
+          })
+        }else {
+          reLoad(this.Secret,file.file,this.Class.BCourseTable).then(res =>{
+            this.$message({
+              message: '上传课程表成功',
+              type: 'success',
+              showClose: true
+            })
+            file.onSuccess()
+          }).catch(error=>{
+            this.$message({
+              message: '上传课程表失败，请重新上传'+ error,
+              type: 'warning',
+              showClose: true
+            })
+            file.onError()
+          })
+        }
+      })
+    },
     //关闭弹窗
     handleClose(done){
       this.$confirm('此操作将清空之前填写的信息, 是否继续?', '提示', {
@@ -487,7 +569,9 @@ export default {
       }).then(() => {
         done()
         this.open = false
+        this.ClassOpen = false
         this.$refs.BClass_photo.clearFiles()
+        this.$refs.BCourseTable.clearFiles()
       }).catch(() => {
 
       });
@@ -495,9 +579,14 @@ export default {
     submitFile(){
       this.$refs.BClass_photo.submit()
     },
+    submitFile1(){
+      this.$refs.BCourseTable.submit()
+    },
     cancel(){
       this.open = false
+      this.ClassOpen = false
       this.$refs.BClass_photo.clearFiles()
+      this.$refs.BCourseTable.clearFiles()
     },
   },
   filters: {

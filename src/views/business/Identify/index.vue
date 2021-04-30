@@ -149,17 +149,17 @@ export default {
     //新增数据
     handleAdd(){
       this.open = true;
-      this.title = "新增人社局";
+      this.title = "新增工种鉴定机构";
     },
     //修改数据
     handleUpdate(row){
         this.form = row;
         this.open = true;
-        this.title = '修改人社局信息';
+        this.title = '修改工种鉴定机构信息';
     },
     //删除数据
     handleDelete(row){
-      this.$confirm('是否删除机构编号为' + row.ao_code + "的人社局信息？","警告", {
+      this.$confirm('是否删除机构编号为' + row.ao_code + "的工种鉴定机构信息？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
@@ -187,7 +187,6 @@ export default {
     submitForm(){
       this.$refs["form"].validate(valid => {
         if (valid) {
-          console.log(this.form)
           if (this.form.id !== undefined) {
             editIdentify(this.form).then(response => {
               this.$message({

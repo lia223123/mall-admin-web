@@ -34,8 +34,8 @@
       <el-table-column label="班级性质" align="center" prop="BClass_type" :formatter="_BClass_type"/>
       <el-table-column label="是否申请费用" align="center" prop="Bis_fee_applied" :formatter="_Bis_fee_applied"/>
       <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_fee_applied"/>
-      <el-table-column label="班级状态" align="center" prop="B_type" :formatter="_classStatus"/>
-      <el-table-column label="学员导入导出" align="center">
+      <el-table-column label="班级状态" align="center" prop="B_type" :formatter="_classStatus" />
+      <el-table-column label="学员导入导出" align="center" width="140px">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -84,7 +84,7 @@
             v-if="scope.row.B_type === 2"
           >
             结束
-          </el-button>
+          </el-button><br>
           <el-button
             size="mini"
             type="text"
@@ -372,7 +372,7 @@ export default {
       }else{
         this.$confirm('确定结束编号为' + row.BClass_code + '的班级？', '结束',{
           confirmButtonText: '确定',
-          cancelButtonText: '确定',
+          cancelButtonText: '取消',
           type: "warning"
         }).then(()=>{
           this.form = row
@@ -386,7 +386,6 @@ export default {
           })
         })
       }
-
     },
     //表格参数渲染
     _Bis_fee_applied(row){
@@ -445,6 +444,7 @@ export default {
     },
     //采集excel的数据
     async stuInfo_import(ev) {
+      console.log(ev)
       let file = ev.raw
       if (!file) return;
       //判断excel的标题

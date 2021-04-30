@@ -2,6 +2,7 @@
   <div class="app-container">
     <div style="margin: 25px 5px">
       <el-button type="primary" round @click="()=>{this.upOpen = true}">上传文件</el-button>
+
     </div>
     <el-row :gutter="5">
       <el-col :span="6">

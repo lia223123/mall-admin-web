@@ -53,6 +53,24 @@ export function formatTime(time, option) {
   }
 }
 
+//urlToFile
+export function UrlToFile(dataurl,filename){
+  let arr = dataurl.split(',');
+  let mime = arr[0].match(/:(.*?);/)[1];
+  console.log(arr)
+  console.log(mime)
+  let bstr =atob(arr[1]);
+  let n = bstr.length;
+  let u8arr =new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  let blob = new Blob([u8arr], {type: mime });
+  blob.lastModifiedDate = new Date();
+  blob.name = filename;
+  return new File([blob], filename,{type: contentType, lastModified: Date.now()})
+}
+
 //性别转换
 export function formatSex(num){
   switch (num){
@@ -175,6 +193,7 @@ export function readFile(file){
     }
   })
 }
+
 //学生信息字段对应表
 export let stuCharacter = {
   STU_name: {

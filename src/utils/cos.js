@@ -99,6 +99,34 @@ export function DownLoadCos(Secret,key){
     });
   })
 }
+//下载对象
+export function download(Secret,key){
+  const cos = new COS({
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+  });
+  return new Promise((resolve, reject) => {
+    cos.getObject({
+      Bucket: 'filegchumandatas01-1304877674',
+      Region:  'ap-nanjing',
+      Key: key,
+    },function(err, data) {
+      if(err){
+        reject(err)
+      }else{
+        resolve(data)
+      }
+    });
+  })
+}
 //删除
 export function DeleteCos(Secret, key){
   const cos = new COS({
@@ -151,6 +179,34 @@ export function getBucket(Secret, prefix){
         reject(err)
       }else{
         resolve(data)
+      }
+    });
+  })
+}
+//查询对象元数据
+export function getHead(Secret, key){
+  const cos = new COS({
+    getAuthorization: function (options, callback){
+      callback({
+        TmpSecretId: Secret.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
+        TmpSecretKey: Secret.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
+        XCosSecurityToken: Secret.credentials.sessionToken, // 临时密钥的 sessionToken
+        ExpiredTime: Secret.startTime
+      })
+    }
+    // SecretKey: 'ngMsuVu996A0a3NVRBBg2ORIzGLDxdBH',
+    // SecretId: 'AKIDAGDUf8IjrZ7UuE4nX4UheN0cEQgqNQtV'
+  });
+  return new Promise((resolve , reject)=>{
+    cos.headObject({
+      Bucket: 'filegchumandatas01-1304877674', /* 必须 */
+      Region: 'ap-nanjing',    /* 必须 */
+      Key: key,               /* 必须 */
+    }, function(err, data, body) {
+      if(err){
+        reject(err)
+      }else{
+        resolve(body)
       }
     });
   })

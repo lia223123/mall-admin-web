@@ -18,27 +18,27 @@ service.interceptors.request.use(config => {
     config.headers['Authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
   }
   // get请求映射params参数
-  // if (config.method === 'get' && config.params) {
-  //   let url = config.url + '?';
-  //   for (const propName of Object.keys(config.params)) {
-  //     const value = config.params[propName];
-  //     let part = encodeURIComponent(propName) + "=";
-  //     if (value !== null && typeof(value) !== "undefined") {
-  //       if (typeof value === 'object') {
-  //         for (const key of Object.keys(value)) {
-  //           let params = propName + '[' + key + ']';
-  //           let subPart = encodeURIComponent(params) + "=";
-  //           url += subPart + encodeURIComponent(value[key]) + "&";
-  //         }
-  //       } else {
-  //         url += part + encodeURIComponent(value) + "&";
-  //       }
-  //     }
-  //   }
-  //   url = url.slice(0, -1);
-  //   config.params = {};
-  //   config.url = url;
-  // }
+  if (config.method === 'get' && config.params) {
+    let url = config.url + '?';
+    for (const propName of Object.keys(config.params)) {
+      const value = config.params[propName];
+      let part = encodeURIComponent(propName) + "=";
+      if (value !== null && typeof(value) !== "undefined") {
+        if (typeof value === 'object') {
+          for (const key of Object.keys(value)) {
+            let params = propName + '[' + key + ']';
+            let subPart = encodeURIComponent(params) + "=";
+            url += subPart + encodeURIComponent(value[key]) + "&";
+          }
+        } else {
+          url += part + encodeURIComponent(value) + "&";
+        }
+      }
+    }
+    url = url.slice(0, -1);
+    config.params = {};
+    config.url = url;
+  }
   return config
 
 }, error => {
@@ -49,7 +49,7 @@ service.interceptors.request.use(config => {
 
 // respone拦截器
 // service.interceptors.response.use(
-//   response => {
+  // response => {
 //   /**
 //   * code为非200是抛错 可结合自己业务进行修改
 //   */

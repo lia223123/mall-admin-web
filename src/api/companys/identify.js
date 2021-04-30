@@ -25,7 +25,7 @@ export function addIdentify(data) {
 //修改
 export function editIdentify(data) {
   return request({
-    url: '/companys/v1/identify/',
+    url: '/companys/v1/identify/' + data.id + '/',
     method: 'put',
     data: data
   })
