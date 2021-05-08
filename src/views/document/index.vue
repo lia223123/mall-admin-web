@@ -2,7 +2,9 @@
   <div class="app-container">
     <div style="margin: 25px 5px">
       <el-button type="primary" round @click="()=>{this.upOpen = true}">上传文件</el-button>
-
+      <el-select placeholder="请选择查询的公司"  @change="handleChange" v-model="ooo" filterable clearable>
+        <el-option v-for="item in fileCompany" :key="item.id" :label="item.Com_name" :value="item.Com_url"/>
+      </el-select>
     </div>
     <el-row :gutter="5">
       <el-col :span="6">
@@ -107,6 +109,11 @@
     </el-row>
     <el-dialog title="文件上传"  :visible.sync="upOpen"  width="500px" append-to-body  :before-close="handleClose">
       <el-form ref="docValidate" :rules="rules" :model="form">
+        <el-form-item label="公司" label-width="80px" prop="Com">
+          <el-select placeholder="请选择公司" v-model="form.Com" filterable>
+            <el-option v-for="item in fileCompany" :key="item.id" :label="item.Com_name" :value="item.Com_url"/>
+          </el-select>
+        </el-form-item>
         <el-form-item label="资料类型" label-width="80px" prop="Doc">
           <el-select placeholder="请选择文件类型" v-model="form.Doc">
             <el-option v-for="item in DocType" :key="item.value" :label="item.type" :value="item.value"/>
@@ -123,7 +130,6 @@
             :auto-upload="false">
             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-<!--            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
           </el-upload>
         </el-form-item>
       </el-form>
@@ -138,6 +144,7 @@
 import {DownLoadCos, getBucket, reLoad} from "../../utils/cos";
 import {getAllFile} from "../../api/studentsInfo/allFile";
 import {Message} from "element-ui";
+import {listFileCompany} from "../../api/fileConpany/filecompany";
 
 export default {
   name: "index",
@@ -167,37 +174,51 @@ export default {
       rules: {
         Doc: [
           {required: true, message: '文件类型不能为空', trigger: 'blur'}
+        ],
+        Com: [
+          {required: true, message: '公司选择不能为空', trigger: 'blur'}
         ]
       },
+      //判断文件上传个数
       int: 0,
+      fileCompany: {},
+      //无效参数
+      ooo: ''
     };
   },
   created(){
-   this.getList()
+    this.getList()
+    listFileCompany().then(res =>{
+      this.fileCompany = res.data.results
+    })
   },
   mounted() {
 
   },
   methods: {
-    getList(){
+    getList(key){
       this.loading1 = true
       this.loading2 = true
       this.loading3 = true
       this.loading4 = true
       getAllFile().then(res =>{
-        getBucket(res.data, "公司报表/").then(response=>{
+        getBucket(res.data, key+"公司报表/").then(response=>{
+          response.Contents.splice(0,1)
           this.reportForm = response
           this.loading1 = false
         });
-        getBucket(res.data, "公司案例/").then(response=>{
+        getBucket(res.data, key+"公司案例/").then(response=>{
+          response.Contents.splice(0,1)
           this.case = response
           this.loading2 = false
         });
-        getBucket(res.data, "公司资质/").then(response=>{
+        getBucket(res.data, key+"公司资质/").then(response=>{
+          response.Contents.splice(0,1)
           this.qualifications = response
           this.loading3 = false
         });
-        getBucket(res.data, "其他/").then(response=>{
+        getBucket(res.data, key+"其他/").then(response=>{
+          response.Contents.splice(0,1)
           this.other = response
           this.loading4 = false
         });
@@ -227,7 +248,7 @@ export default {
     },
     Upload(file){
       getAllFile().then(res=>{
-        let key = this.form.Doc+file.file.name
+        let key = this.form.Com + this.form.Doc + file.file.name
         getBucket(res.data,key).then(response =>{
           if(response.Contents.length < 1){
             reLoad(res.data,file.file,key).then(() =>{
@@ -277,7 +298,7 @@ export default {
       this.int = 0
       this.$refs.docValidate.resetFields()
       this.$refs.upload.clearFiles()
-      this.getList()
+      this.getList(ooo)
     },
     cancel(){
       this.$confirm('确定关闭？', '提示', {
@@ -290,6 +311,9 @@ export default {
       }).catch(() => {
 
       });
+    },
+    handleChange(value){
+      this.getList(value)
     }
   }
 }

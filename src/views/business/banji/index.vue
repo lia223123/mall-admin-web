@@ -25,8 +25,8 @@
         <el-table-column label="人社局编号" align="center" prop="BR_code"/>
       <el-table-column label="开班地" align="center" prop="BClass_address"/>
       <el-table-column label="部门" align="center" prop="BDepartment"/>
-      <el-table-column label="开班时间·" align="center" prop="BCStartTime"/>
-      <el-table-column label="开班结束时间" align="center" prop="BCEndTime"/>
+<!--      <el-table-column label="开班时间·" align="center" prop="BCStartTime"/>-->
+<!--      <el-table-column label="开班结束时间" align="center" prop="BCEndTime"/>-->
       <el-table-column label="班主任" align="center" prop="BHead_teacher"/>
 <!--      <el-table-column label="讲师" align="center" prop="BLecturer"/>-->
       <el-table-column label="工种类型" align="center" prop="BOt_name"/>
@@ -49,20 +49,38 @@
             icon="el-icon-wallet">学员信息导出</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="财务操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="财务查看" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-wallet"
             @click="handledetail(scope.row)"
-          >财务详情</el-button><br>
+          >班级财务报表查看</el-button><br>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-collection-tag"-->
+<!--            @click="handleHeSuan(scope.row)"-->
+<!--          >招生明细</el-button>-->
+        </template>
+      </el-table-column>
+      <el-table-column label="财务登记">
+        <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-collection-tag"
-            @click="handleHeSuan(scope.row)"
-          >金额核算</el-button>
+            icon="el-icon-wallet"
+            @click="handleDJ(scope.row)"
+          >财务费用登记
+          </el-button><br>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handleDR(scope.row)"
+          >财务费用确认
+          </el-button>
         </template>
       </el-table-column>
       <el-table-column label="流程操作" align="center" class-name="small-padding fixed-width">
@@ -94,7 +112,7 @@
         </template>
       </el-table-column>
     </el-table>
-
+<!--学院导入-->
     <el-dialog title="学员导入" :visible.sync="ImOpen" width="1600px" append-to-body :before-close="handleClose">
       <el-upload
         class="upload-demo"
@@ -130,11 +148,49 @@
         <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>
       </el-table>
     </el-dialog>
+<!--财务详情-->
+    <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1000px" append-to-body :before-close="handleClose">
+
+    </el-dialog>
+    <el-dialog title="班级费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
+        <el-form :model="CWform" ref="dynamicForm" label-width="60px" class="demo-dynamic">
+          <el-form-item prop="type" label="费用行" v-for="(domain, index) in CWform.detail" :key="domain.key" >
+            <el-row>
+              <el-col :span="8">
+                <el-select v-model="domain.type" placeholder="请先选择费用类型">
+                  <el-option v-for="item in CWinfo" :key="item.value" :label="item.name" :value="item.value"/>
+                </el-select>
+              </el-col>
+              <el-col :span="8">
+                <el-input v-model="domain.money"  placeholder="请输入金额"/>
+              </el-col>
+              <el-col :span="4">
+                <el-button @click.prevent="removeDomain(domain)">删除</el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="CwSubmit">提交</el-button>
+            <el-button @click="addDomain">新增费用行</el-button>
+            <el-button @click="resetForm">重置</el-button>
+          </el-form-item>
+        </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {ArrayCompare, banjiType, ClassStatus, formatSex, isNot, level, readFile, stuCharacter} from "../../../utils";
+import {
+  ArrayCompare,
+  banjiType,
+  ClassStatus, FformatSex, FInsureType, FisNot,
+  formatSex,
+  Fstu_educations, Fstu_personnel,
+  isNot,
+  level,
+  readFile,
+  stuCharacter
+} from "../../../utils";
 import {Message} from "element-ui";
 import {addBanJi, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
 import xlsx from "xlsx";
@@ -186,11 +242,36 @@ export default {
         {name: '技师', value: '6'},
         {name: '高级技师', value: '7'},
       ],
+      CWinfo: [
+        {name: '耗材费',value: 1},
+        {name: '教材费',value: 2},
+        {name: '场地费',value: 3},
+        {name: '会务费',value: 4},
+        {name: '鉴定费',value: 5},
+        {name: '接待费',value: 6},
+        {name: '交通费',value: 7},
+        {name: '汽车费',value: 8},
+        {name: '食宿费',value: 9},
+        {name: '学员生活补贴',value: 10},
+        // {name: '提成费用',value: 11},
+        // {name: '授课费用',value: 12},
+        // {name: '带班费用',value: 13},
+        // {name: '加班费用',value: 14},
+        // {name: '出差补贴',value: 15},
+      ],
       //需要的参数
       lecturers: {},
       importInfo: [],
+      FYInfo: {},
       ImOpen: false,
-      banji_id : ''
+      CwOpen: false,
+      FYOpen: false,
+      banji_id : '',
+      CWform: {
+        detail: [
+          {type: '', money: '', key: Date.now(), se_bj: ''}
+        ]
+      }
     }
   },
   created() {
@@ -415,7 +496,7 @@ export default {
             '学员类型': null,
             '性别': null,
             '所属民族': null,
-            '所属单位': null,
+            '归属单位': null,
             '文化程度': null,
             '政治面貌': null,
             '现居地址': null,
@@ -444,7 +525,6 @@ export default {
     },
     //采集excel的数据
     async stuInfo_import(ev) {
-      console.log(ev)
       let file = ev.raw
       if (!file) return;
       //判断excel的标题
@@ -457,7 +537,7 @@ export default {
         '学员类型',
         '性别',
         '所属民族',
-        '所属单位',
+        '归属单位',
         '文化程度',
         '政治面貌',
         '现居地址',
@@ -494,10 +574,10 @@ export default {
             type = "string" ? v = String(v) : null;
             obj[key] = v
           }
+          obj.STUBJ = this.banji_id
           arr.push(obj);
         });
         this.importInfo = arr
-        this.importInfo[0].banji_id = this.banji_id
       } else {
         Message.warning({
           message: '请上传系统下载的模板',
@@ -506,11 +586,59 @@ export default {
       }
     },
     importDB(){
-      addStudent(this.importInfo).then(res=>{
-        console.log(res)
-      }).catch(error=>{
-        console.log(error)
+      const loading = this.$loading({
+        lock: true,
+        text: '系统正在努力上传',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
       })
+      this.importInfo.forEach(item =>{
+        item.STU_education = Fstu_educations(item.STU_education)
+        item.STU_insureType = FInsureType(item.STU_insureType)
+        item.STU_gender = FformatSex(item.STU_gender)
+        item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
+        item.STU_filed_account = FisNot(item.STU_filed_account)
+        addStudent(item).then(res=>{
+          loading.close()
+          Message.success({
+            message: '导入成功',
+            showClose: true
+          })
+        }).catch(err=>{
+          Message.error({
+            message: err,
+            showClose: true
+          })
+          loading.close()
+        })
+      })
+    },
+
+    //财务模块
+    handleDJ(value){
+      this.banji_id = value.id
+      this.CWform.detail[0].se_bj = value.id
+      this.FYOpen = true
+    },
+    CwSubmit(){
+      console.log(this.CWform.detail)
+    },
+    resetForm() {
+      this.$refs['dynamicForm'].resetFields();
+    },
+    removeDomain(item) {
+      let index = this.CWform.detail.indexOf(item)
+      if (index !== -1) {
+        this.CWform.detail.splice(index, 1)
+      }
+    },
+    addDomain(row) {
+      this.CWform.detail.push({
+        type: '',
+        money: '',
+        key: Date.now(),
+        se_bj: this.banji_id,
+      });
     }
   }
 }

@@ -18,9 +18,20 @@
           size="mini"
           @click="handleAdd"
         >新增</el-button>
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleExport"
+        >导出学生信息</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" border>
+    <el-table v-loading="loading" :data="dataList" border @selection-change="handleSelectionChange">
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
       <el-table-column label="id" align="center" prop="id">
         <template slot-scope="scope">
           <router-link :to="'/stuInfo/' + scope.row.id" class="link-type">
@@ -251,9 +262,10 @@
 </template>
 
 <script>
-import {formatSex, isNot, stu_educations, stu_personnel} from "../../../utils";
+import {formatSex, InsureType, isNot, stu_educations, stu_personnel} from "../../../utils";
 import {DeleteCos, LEupload, reLoad} from "../../../utils/cos";
-import {Message} from "element-ui";
+import {Loading, Message} from "element-ui";
+import xlsx from "xlsx";
 import {
   addStudent,
   deleteStudent,
@@ -373,7 +385,8 @@ export default {
       ],
       Teacher: {},
       imgOpen: false,
-      canIsDes: false
+      canIsDes: false,
+      selectList: []
     }
   },
   created() {
@@ -754,6 +767,57 @@ export default {
       this.form = row
       this.imgOpen = true
     },
+    //选中表格选择框
+    handleSelectionChange(val) {
+      this.selectList = val
+    },
+    //导出学生信息
+    handleExport(){
+      if(this.selectList.length <= 0 ){
+        Message.warning({
+          message: '请先选中要导出的数据',
+          showClose: true
+        })
+        return
+      }
+      let loadingInstance = Loading.service({
+        text: '系统正在拼命处理中，请稍等片刻',
+        background: "rgba(0,0,0,.5)"
+      });
+      this.selectList.forEach(item =>{
+        item.STU_gender = formatSex(item.STU_gender)
+        item.STU_education = stu_educations(item.STU_education)
+        item.STU_personnel_category = stu_personnel(item.STU_personnel_category)
+        item.STU_insureType = InsureType(item.STU_insureType)
+        item.STU_filed_account = isNot(item.STU_filed_account)
+      });
+      let arr = this.selectList.map(item =>{
+        return {
+          学员姓名: item.STU_name,
+          身份证号: item.STU_sf_id,
+          学员类型: item.STU_personnel_category,
+          年龄: item.STU_age,
+          性别: item.STU_gender,
+          所属民族: item.STU_nation,
+          所属单位: item.STU_employer,
+          文化程度: item.STU_education,
+          政治面貌: item.STU_political_affiliation,
+          现居地址: item.STU_current_address,
+          户籍详细地址: item.STU_detail_address,
+          手机号码: item.STU_phone,
+          就业状态: item.STU_employment_status,
+          是否属于扶贫建档立卡户: item.STU_filed_account,
+          专业: item.STU_major,
+          保险类型: item.STU_insureType,
+          健康状态: item.STU_health_status,
+        }
+      })
+      let sheet = xlsx.utils.json_to_sheet(arr),
+        book = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(book, sheet, "sheet1");
+      xlsx.writeFile(book, `学生信息${new Date().getTime()}.xls`)
+      loadingInstance.close()
+    }
   }
 }
 </script>

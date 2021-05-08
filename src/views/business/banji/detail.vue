@@ -115,8 +115,10 @@
                 <el-form-item>
                   <el-button @click="()=>{ this.open = true }"  >班级集体照上传</el-button>
                   <el-button @click="()=>{ this.ClassOpen = true}">课程表上传</el-button>
+                </el-form-item>
+                <el-form-item>
                   <el-button @click="DidCard">班级集体照下载</el-button>
-                  <el-button @click="SeeClass">课程表查看</el-button>
+                  <el-button @click="SeeClass">课程表下载</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -146,7 +148,7 @@
               </el-dialog>
               <el-dialog title="课程表上传" :visible.sync="ClassOpen" width="600px" append-to-body  :before-close="handleClose">
                 <el-form ref="form" :model="form" :rules="rules" label-width="110px">
-                  <el-form-item label="班级集体照" prop="BClass_photo">
+                  <el-form-item label="课程表" prop="BClass_photo">
                     <el-upload
                       action=""
                       ref="BCourseTable"
@@ -410,7 +412,6 @@ export default {
       getBanJi(id).then(res =>{
         this.Class = res.data
         this.Class.BClass_name = this.Class.BClass_name.toString()
-        console.log(this.Class)
       })
     },
     //下载文件
@@ -448,14 +449,14 @@ export default {
     //保存
     submit(){
       editBanJi(this.Class).then(() =>{
+        this.isDes = true
+        this.getClass(this.id)
+        this.open = false
+        // this.$refs.BClass_photo.clearFiles()
         this.$message({
           message: '修改成功',
           type: 'success'
         });
-        this.isDes = true
-        this.getClass(this.id)
-        this.open = false
-        this.$refs.BClass_photo.clearFiles()
       }).catch(() =>{
         this.$message({
           message: '请检查班级编号是否有重复，如果没有重复请联系管理员',

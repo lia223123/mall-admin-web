@@ -97,6 +97,17 @@ export const constantRouterMap = [
       meta: {title: '标书资料', icon: 'home'}
     }]
   },
+  {
+    path: '/fileCom',
+    component: Layout,
+    redirect: '/fileCom',
+    children: [{
+      path: 'fileCompany',
+      name: 'fileCompany',
+      component: () => import('@/views/essential/fileCompany/index'),
+      meta: {title: '公司单位', icon: 'product'}
+    },]
+  },
   // {
   //   path: '',
   //   component: Layout,
@@ -138,50 +149,51 @@ export const constantRouterMap = [
         meta: {title: '学员单位名称', icon: 'ums-admin'}
       },
 
+
     ],
-    meta: {title: '人员信息', icon: 'sms-ad'}
+    meta: {title: '人员信息', icon: 'ums-resource'}
   },
   {
     path: '/business',
     component: Layout,
     redirect: '/business',
-    meta: {title: '业务处理', icon: 'sms-ad'},
+    meta: {title: '业务处理', icon: 'product-attr'},
     children: [
       {
         path: 'tenderProject',
         name: 'tenderProject',
         component: () => import('@/views/business/tenderProjects/index'),
-        meta: {title: '中标项目', icon: 'ums-admin'}
+        meta: {title: '中标项目', icon: 'product-brand'}
       },
       {
         path: 'banji',
         name: 'banji',
         component: () => import('@/views/business/banji/index'),
-        meta: {title: '班级信息', icon: 'ums-admin'}
+        meta: {title: '班级信息', icon: 'product-list'}
       },
       {
         path: 'stuInfo',
         name: 'stuInfo',
         component: () => import('@/views/business/stuInfo/index'),
-        meta: {title: '学员信息', icon: 'ums-admin'}
+        meta: {title: '学员信息', icon: 'user'}
       },
       {
         path: 'renSheJu',
         name: 'renSheJu',
         component: () => import('@/views/business/renSheJu/index'),
-        meta: {title: '人社局信息', icon: 'ums-admin'}
+        meta: {title: '人社局信息', icon: 'product-cate'}
       },
       {
         path: 'trainBook',
         name: 'trainBook',
         component: () => import('@/views/business/trainBook/index'),
-        meta: {title: '证书信息', icon: 'ums-admin'}
+        meta: {title: '证书信息', icon: 'sms-subject'}
       },
       {
         path: 'Identify',
         name: 'Identify',
         component: () => import('@/views/business/Identify/index'),
-        meta: {title: '工种鉴定机构', icon: 'ums-admin'}
+        meta: {title: '工种鉴定机构', icon: 'sms'}
       },
     ]
   },

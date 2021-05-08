@@ -78,6 +78,12 @@ export function formatSex(num){
     case 2: return '女'
   }
 }
+export function FformatSex(num){
+  switch (num){
+    case '男': return 1
+    case '女': return 2
+  }
+}
 //员工类型
 export function formatUserType(num) {
   switch (num) {
@@ -101,6 +107,19 @@ export function stu_educations(num) {
     default: return '无'
   }
 }
+export function Fstu_educations(num) {
+  switch (num){
+    case '无': return 1
+    case '小学': return 2
+    case '初中': return 3
+    case '高中': return 4
+    case '专科': return 5
+    case '本科': return 6
+    case '硕士': return 7
+    case '博士': return 8
+    default: return 1
+  }
+}
 //人员类别
 export function stu_personnel(num){
   switch (num){
@@ -115,6 +134,19 @@ export function stu_personnel(num){
     default: return "无"
   }
 }
+export function Fstu_personnel(num){
+  switch (num){
+    case "贫困家庭子女": return 1
+    case "贫困劳动力": return 2
+    case "失业人员": return 3
+    case "城乡未继续升学初高中毕业生": return 4
+    case "农村转移就业劳动力": return 5
+    case "转岗职工": return 6
+    case "残疾人": return 7
+    case "退役军人": return 8
+    default: return 3
+  }
+}
 //保险类型
 export function InsureType(num){
   switch (num) {
@@ -127,11 +159,28 @@ export function InsureType(num){
     default: return "无"
   }
 }
+export function FInsureType(num){
+  switch (num) {
+    case "无": return 1
+    case "养老": return 2
+    case "失业人员": return 3
+    case "医疗": return 4
+    case "失业": return 5
+    case "工伤": return 6
+    default: return 1
+  }
+}
 //是否
 export function isNot(num){
   switch (num) {
     case 1: return "是"
     case 2: return "否"
+  }
+}
+export function FisNot(num){
+  switch (num) {
+    case "是": return 1
+    case "否": return 2
   }
 }
 //班级性质
@@ -167,7 +216,6 @@ export function ClassStatus(num){
     case 1: return '未进行'
     case 2: return '进行中'
     case 3: return '已结束'
-
   }
 }
 //数组比较
@@ -181,6 +229,47 @@ export function ArrayCompare(newArray,oldArray){
     }
   }
   return true
+}
+//财务信息模块
+export function CWInfo(num){
+  switch (num) {
+    case 1 : return '耗材费'
+    case 2 : return '教材费'
+    case 3 : return '场地费'
+    case 4 : return '会务费'
+    case 5 : return '鉴定费'
+    case 6 : return '接待费'
+    case 7 : return '交通费'
+    case 8 : return '汽车费'
+    case 9 : return '食宿费'
+    case 10 : return '生活补贴'
+    case 11 : return '提成费用'
+    case 12 : return '授课费用'
+    case 13 : return '带班费用'
+    case 14 : return '加班费用'
+    case 15 : return '出差补贴'
+    case 16 : return '预计收入'
+  }
+}
+export function FCWInfo(num){
+  switch (num) {
+    case '耗材费' : return 1
+    case '教材费' : return 2
+    case '场地费' : return 3
+    case '会务费' : return 4
+    case '鉴定费' : return 5
+    case '接待费' : return 6
+    case '交通费' : return 7
+    case '汽车费' : return 8
+    case '食宿费' : return 9
+    case '生活补贴' : return 10
+    case '提成费用' : return 11
+    case '授课费用' : return 12
+    case '带班费用' : return 13
+    case '加班费用' : return 14
+    case '出差补贴' : return 15
+    case '预计收入' : return 16
+  }
 }
 
 //将文件按照二进制进行读取
