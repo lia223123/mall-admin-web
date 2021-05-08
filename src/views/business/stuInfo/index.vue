@@ -431,6 +431,9 @@ export default {
         STU_photoIdf: undefined,
       };
       this.$refs['form'].resetFields();
+    },
+    //重置图片数据
+    resetPhoto(){
       this.$refs['LE_idCard01'].clearFiles()
       this.$refs['LE_idCard02'].clearFiles()
       this.$refs['LE_gc'].clearFiles()
@@ -468,7 +471,7 @@ export default {
         }).catch((err)=>{
           this.$message({
             message: "删除失败",
-            type: 'success',
+            type: 'error',
             showClose: true
           });
         })
@@ -489,6 +492,7 @@ export default {
         this.open = false
         this.imgOpen = false
         this.reset()
+        this.resetPhoto()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -508,6 +512,7 @@ export default {
               this.imgOpen = false
               this.getList();
               this.reset()
+              this.resetPhoto()
               this.canIsDes = false
             })
           }else{
@@ -540,6 +545,7 @@ export default {
         this.open = false
         this.imgOpen = false
         this.reset()
+        this.resetPhoto()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -744,11 +750,11 @@ export default {
       });
     },
     //上传成功后清除预览
-    resetFile1(){
-      this.$refs.LE_idCard01.clearFiles()
-      this.$refs['LE_idCard02'].clearFiles()
-      this.$refs['LE_gc'].clearFiles()
-    },
+    // resetFile1(){
+    //   this.$refs.LE_idCard01.clearFiles()
+    //   this.$refs['LE_idCard02'].clearFiles()
+    //   this.$refs['LE_gc'].clearFiles()
+    // },
     //表单渲染
     _education(row){
       return stu_educations(row.STU_education);

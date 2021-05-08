@@ -22,7 +22,7 @@
         </template>
       </el-table-column>
         <el-table-column label="班级名称" align="center" prop="BClass_name"/>
-        <el-table-column label="人社局编号" align="center" prop="BR_code"/>
+<!--        <el-table-column label="人社局编号" align="center" prop="BR_code"/>-->
       <el-table-column label="开班地" align="center" prop="BClass_address"/>
       <el-table-column label="部门" align="center" prop="BDepartment"/>
 <!--      <el-table-column label="开班时间·" align="center" prop="BCStartTime"/>-->
@@ -30,7 +30,7 @@
       <el-table-column label="班主任" align="center" prop="BHead_teacher"/>
 <!--      <el-table-column label="讲师" align="center" prop="BLecturer"/>-->
       <el-table-column label="工种类型" align="center" prop="BOt_name"/>
-      <el-table-column label="证书等级" align="center" prop="BLev" :formatter="_BLev"/>
+<!--      <el-table-column label="证书等级" align="center" prop="BLev" :formatter="_BLev"/>-->
       <el-table-column label="班级性质" align="center" prop="BClass_type" :formatter="_BClass_type"/>
       <el-table-column label="是否申请费用" align="center" prop="Bis_fee_applied" :formatter="_Bis_fee_applied"/>
       <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_fee_applied"/>
@@ -49,22 +49,6 @@
             icon="el-icon-wallet">学员信息导出</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="财务查看" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-wallet"
-            @click="handledetail(scope.row)"
-          >班级财务报表查看</el-button><br>
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-collection-tag"-->
-<!--            @click="handleHeSuan(scope.row)"-->
-<!--          >招生明细</el-button>-->
-        </template>
-      </el-table-column>
       <el-table-column label="财务登记">
         <template slot-scope="scope">
           <el-button
@@ -74,6 +58,44 @@
             @click="handleDJ(scope.row)"
           >财务费用登记
           </el-button><br>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handleYHDJ(scope.row)"
+          >员工费用登记
+          </el-button><br>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handleJSDJ(scope.row)"
+          >教师费用登记
+          </el-button><br>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handleKBDJ(scope.row)"
+          >开班费用登记
+          </el-button><br>
+
+        </template>
+      </el-table-column>
+      <el-table-column label="财务查看" align="center" class-name="small-padding fixed-width" width="140px">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handledetail(scope.row)"
+          >班级财务报表查看</el-button><br>
+          <!--          <el-button-->
+          <!--            size="mini"-->
+          <!--            type="text"-->
+          <!--            icon="el-icon-collection-tag"-->
+          <!--            @click="handleHeSuan(scope.row)"-->
+          <!--          >招生明细</el-button>-->
           <el-button
             size="mini"
             type="text"
@@ -152,27 +174,68 @@
     <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1000px" append-to-body :before-close="handleClose">
 
     </el-dialog>
-    <el-dialog title="班级费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
+    <el-dialog title="基本费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
         <el-form :model="CWform" ref="dynamicForm" label-width="60px" class="demo-dynamic">
           <el-form-item prop="type" label="费用行" v-for="(domain, index) in CWform.detail" :key="domain.key" >
             <el-row>
               <el-col :span="8">
-                <el-select v-model="domain.type" placeholder="请先选择费用类型">
+                <el-select v-model="domain.se_types" placeholder="请先选择费用类型">
                   <el-option v-for="item in CWinfo" :key="item.value" :label="item.name" :value="item.value"/>
                 </el-select>
               </el-col>
-              <el-col :span="8">
-                <el-input v-model="domain.money"  placeholder="请输入金额"/>
+              <el-col :span="10">
+                <el-input v-model="domain.se_pay" placeholder="请输入金额" type="number"/>
               </el-col>
               <el-col :span="4">
-                <el-button @click.prevent="removeDomain(domain)">删除</el-button>
+                <el-button @click.prevent="removeDomain(domain)" type="danger">删除</el-button>
               </el-col>
             </el-row>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="CwSubmit">提交</el-button>
             <el-button @click="addDomain">新增费用行</el-button>
-            <el-button @click="resetForm">重置</el-button>
+            <el-button @click="resetForm" type="warning">重置</el-button>
+          </el-form-item>
+        </el-form>
+    </el-dialog>
+    <el-dialog title="员工费用登记" :visible.sync="YHOpen" width="1000px" append-to-body :before-close="handleClose">
+        <el-form :model="YHform" ref="dynamicForm" label-width="60px" class="demo-dynamic">
+          <div>
+            <el-row>
+              <el-col :span="6">
+                <el-form-item label="姓名">
+                  <el-input placeholder="请输入姓名"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="电话">
+                  <el-input placeholder="请输入电话"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="身份证">
+                  <el-input placeholder="请输入身份证"/>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="6">
+                <el-form-item label="开户银行" label-width="80px">
+                  <el-input placeholder="请输入开户行"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="银行卡号" label-width="80px">
+                  <el-input placeholder="请输入银行卡号"/>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-divider></el-divider>
+          </div>
+          <el-form-item>
+            <el-button type="primary" @click="CwSubmit">提交</el-button>
+            <el-button @click="addDomain">新增费用行</el-button>
+            <el-button @click="resetForm" type="warning">重置</el-button>
           </el-form-item>
         </el-form>
     </el-dialog>
@@ -196,6 +259,7 @@ import {addBanJi, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../ap
 import xlsx from "xlsx";
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {addStudent} from "../../../api/studentsInfo/student";
+import {addSettleAccounts} from "../../../api/finance/settleAccounts";
 export default {
   name: "index",
   data(){
@@ -266,12 +330,14 @@ export default {
       ImOpen: false,
       CwOpen: false,
       FYOpen: false,
+      YHOpen: false,
       banji_id : '',
       CWform: {
         detail: [
-          {type: '', money: '', key: Date.now(), se_bj: ''}
+          {se_types: '', se_pay: 0, key: Date.now(), se_bj: ''}
         ]
-      }
+      },
+      YHform: {}
     }
   },
   created() {
@@ -586,45 +652,78 @@ export default {
       }
     },
     importDB(){
-      const loading = this.$loading({
-        lock: true,
-        text: '系统正在努力上传',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      })
-      this.importInfo.forEach(item =>{
-        item.STU_education = Fstu_educations(item.STU_education)
-        item.STU_insureType = FInsureType(item.STU_insureType)
-        item.STU_gender = FformatSex(item.STU_gender)
-        item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
-        item.STU_filed_account = FisNot(item.STU_filed_account)
-        addStudent(item).then(res=>{
-          loading.close()
-          Message.success({
-            message: '导入成功',
-            showClose: true
-          })
-        }).catch(err=>{
-          Message.error({
-            message: err,
-            showClose: true
-          })
-          loading.close()
+      if(this.importInfo.length > 0){
+        const loading = this.$loading({
+          lock: true,
+          text: '系统正在努力上传',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
         })
+        this.importInfo.forEach(item =>{
+          item.STU_education = Fstu_educations(item.STU_education)
+          item.STU_insureType = FInsureType(item.STU_insureType)
+          item.STU_gender = FformatSex(item.STU_gender)
+          item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
+          item.STU_filed_account = FisNot(item.STU_filed_account)
+          addStudent(item).then(res=>{
+            loading.close()
+            Message.success({
+              message: '导入成功',
+              showClose: true
+            })
+          }).catch(err=>{
+            Message.error({
+              message: err,
+              showClose: true
+            })
+            loading.close()
+          })
+        })
+      }else Message.warning({
+        message: '请先选择导入文件',
+        showClose: true
       })
+
     },
 
     //财务模块
     handleDJ(value){
       this.banji_id = value.id
-      this.CWform.detail[0].se_bj = value.id
+      this.CWform.detail = [
+        {
+          se_types: '',
+          se_pay: 0,
+          key: Date.now(),
+          se_bj: this.banji_id,
+        }
+      ]
       this.FYOpen = true
     },
     CwSubmit(){
-      console.log(this.CWform.detail)
+      this.CWform.detail.forEach(item =>{
+        addSettleAccounts(item).then(res =>{
+          Message.success({
+            message: '财务登记成功',
+            showClose: true
+          })
+          this.FYOpen = false
+        }).catch(err=>{
+          Message.error({
+            message: err,
+            showClose: true
+          })
+        })
+      })
     },
     resetForm() {
-      this.$refs['dynamicForm'].resetFields();
+      this.CWform.detail = [
+        {
+          se_types: '',
+          se_pay: 0,
+          key: Date.now(),
+          se_bj: this.banji_id,
+        }
+      ]
     },
     removeDomain(item) {
       let index = this.CWform.detail.indexOf(item)
@@ -632,13 +731,18 @@ export default {
         this.CWform.detail.splice(index, 1)
       }
     },
-    addDomain(row) {
+    addDomain() {
       this.CWform.detail.push({
-        type: '',
-        money: '',
+        se_types: '',
+        se_pay: 0,
         key: Date.now(),
         se_bj: this.banji_id,
       });
+    },
+    //用户费用登记
+    handleYHDJ(value){
+      this.banji_id = value.id
+      this.YHOpen = true
     }
   }
 }
