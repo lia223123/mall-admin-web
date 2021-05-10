@@ -56,7 +56,7 @@
             type="text"
             icon="el-icon-wallet"
             @click="handleDJ(scope.row)"
-          >财务费用登记
+          >基本费用登记
           </el-button><br>
           <el-button
             size="mini"
@@ -175,7 +175,7 @@
 
     </el-dialog>
     <el-dialog title="基本费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
-        <el-form :model="CWform" ref="dynamicForm" label-width="60px" class="demo-dynamic">
+        <el-form :model="CWform" ref="JBdynamicForm" label-width="60px" class="demo-dynamic">
           <el-form-item prop="type" label="费用行" v-for="(domain, index) in CWform.detail" :key="domain.key" >
             <el-row>
               <el-col :span="8">
@@ -199,46 +199,185 @@
         </el-form>
     </el-dialog>
     <el-dialog title="员工费用登记" :visible.sync="YHOpen" width="1000px" append-to-body :before-close="handleClose">
-        <el-form :model="YHform" ref="dynamicForm" label-width="60px" class="demo-dynamic">
-          <div>
+        <el-form :model="YHform" ref="YGdynamicForm" label-width="60px" class="demo-dynamic">
+          <div v-for="(domain, index) in YHform.detail" :key="domain.key">
             <el-row>
-              <el-col :span="6">
+              <el-col :span="5">
                 <el-form-item label="姓名">
-                  <el-input placeholder="请输入姓名"/>
+                  <el-input placeholder="请输入姓名" v-model="domain.em_name"/>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="电话">
-                  <el-input placeholder="请输入电话"/>
+                  <el-input placeholder="请输入电话" v-model="domain.em_phone" max-length="11"/>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="身份证">
-                  <el-input placeholder="请输入身份证"/>
+                  <el-input placeholder="请输入身份证" v-model="domain.em_cid"/>
                 </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="7">
+                <el-form-item label="带班费用" label-width="80px">
+                  <el-input type="number" placeholder="请输入带班费用" v-model="domain.em_dbCost"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="7">
+                <el-form-item label="出差补贴" label-width="80px">
+                  <el-input type="number" placeholder="请输入出差补贴" v-model="domain.em_cxCost"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="7">
+                <el-form-item label="加班费用" label-width="80px">
+                  <el-input type="number" placeholder="请输入加班费用" v-model="domain.em_jbCost"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                  <el-button @click.prevent="removeYHDomain(domain)" type="danger">删除</el-button>
               </el-col>
             </el-row>
             <el-row>
               <el-col :span="6">
                 <el-form-item label="开户银行" label-width="80px">
-                  <el-input placeholder="请输入开户行"/>
+                  <el-input placeholder="请输入开户行" v-model="domain.em_bank"/>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="银行卡号" label-width="80px">
-                  <el-input placeholder="请输入银行卡号"/>
+                  <el-input placeholder="请输入银行卡号" v-model="domain.em_bankCode"/>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="备注" label-width="80px">
+                  <el-input type="textarea" placeholder="请输入备注" v-model="domain.em_text"/>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-divider></el-divider>
           </div>
           <el-form-item>
-            <el-button type="primary" @click="CwSubmit">提交</el-button>
-            <el-button @click="addDomain">新增费用行</el-button>
-            <el-button @click="resetForm" type="warning">重置</el-button>
+            <el-button type="primary" @click="CwYHSubmit">提交</el-button>
+            <el-button @click="addDomainYH">新增费用行</el-button>
+            <el-button @click="resetYHForm" type="warning">重置</el-button>
           </el-form-item>
         </el-form>
     </el-dialog>
+    <el-dialog title="教师费用登记" :visible.sync="JSOpen" width="1000px" append-to-body :before-close="handleClose">
+      <el-form :model="JSform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic">
+        <div v-for="(domain, index) in JSform.detail" :key="domain.key">
+          <el-row>
+            <el-col :span="5">
+              <el-form-item label="姓名">
+                <el-input placeholder="请输入姓名" v-model="domain.te_name"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="电话">
+                <el-input placeholder="请输入电话" v-model="domain.te_phone" max-length="11"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="身份证">
+                <el-input placeholder="请输入身份证" v-model="domain.te_cid"/>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="开户银行" label-width="80px">
+                <el-input placeholder="请输入开户行" v-model="domain.te_bank"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="7">
+              <el-form-item label="银行卡号" label-width="80px">
+                <el-input placeholder="请输入银行卡号" v-model="domain.te_bankCode"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="备注" label-width="60px">
+                <el-input type="textarea" placeholder="请输入备注" v-model="domain.te_text"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="补贴金额" label-width="80px">
+                <el-input type="number" placeholder="请输入补贴金额" v-model="domain.te_pay"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="15">
+              <el-button @click.prevent="removeJSDomain(domain)" type="danger" style="float: right">删除</el-button>
+            </el-col>
+          </el-row>
+          <el-divider></el-divider>
+        </div>
+        <el-form-item>
+          <el-button type="primary" @click="CwJSSubmit">提交</el-button>
+          <el-button @click="addDomainJS">新增费用行</el-button>
+          <el-button @click="resetJSForm" type="warning">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    <el-dialog title="开班费用登记" :visible.sync="KBOpen" width="1000px" append-to-body :before-close="handleClose">
+      <el-form :model="KBform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic">
+        <div v-for="(domain, index) in KBform.detail" :key="domain.key">
+          <el-row>
+            <el-col :span="5">
+              <el-form-item label="姓名">
+                <el-input placeholder="请输入姓名" v-model="domain.ad_name"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="电话">
+                <el-input placeholder="请输入电话" v-model="domain.ad_phone" max-length="11"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="身份证">
+                <el-input placeholder="请输入身份证" v-model="domain.ad_cid"/>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="开户银行" label-width="80px">
+                <el-input placeholder="请输入开户行" v-model="domain.ad_bank"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="7">
+              <el-form-item label="银行卡号" label-width="80px">
+                <el-input placeholder="请输入银行卡号" v-model="domain.ad_bankCode"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="备注" label-width="60px">
+                <el-input type="textarea" placeholder="请输入备注" v-model="domain.ad_text"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="招生人数" label-width="80px">
+                <el-input type="number" placeholder="请输入补贴金额" v-model="domain.ad_count"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="补贴金额" label-width="80px">
+                <el-input type="number" placeholder="请输入补贴金额" v-model="domain.ad_pay"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="11">
+              <el-button @click.prevent="removeKBDomain(domain)" type="danger" style="float: right">删除</el-button>
+            </el-col>
+          </el-row>
+          <el-divider></el-divider>
+        </div>
+        <el-form-item>
+          <el-button type="primary" @click="CwKBSubmit">提交</el-button>
+          <el-button @click="addDomainKB">新增费用行</el-button>
+          <el-button @click="resetKBForm" type="warning">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -260,6 +399,9 @@ import xlsx from "xlsx";
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {addStudent} from "../../../api/studentsInfo/student";
 import {addSettleAccounts} from "../../../api/finance/settleAccounts";
+import {addEmDetails} from "../../../api/finance/emDetails";
+import {addSubsidyPayment, editSubsidyPayment} from "../../../api/finance/subsidyPayment";
+import {addPayDetails} from "../../../api/finance/payDetails";
 export default {
   name: "index",
   data(){
@@ -331,13 +473,30 @@ export default {
       CwOpen: false,
       FYOpen: false,
       YHOpen: false,
+      JSOpen: false,
+      KBOpen: false,
       banji_id : '',
       CWform: {
         detail: [
           {se_types: '', se_pay: 0, key: Date.now(), se_bj: ''}
         ]
       },
-      YHform: {}
+      YHform: {
+        detail: [
+          {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: '',  key: Date.now()}
+        ]
+      },
+      JSform: {
+        detail: [
+          {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: ''}
+        ]
+      },
+      KBform: {
+        detail: [
+          {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: '', key: Date.now()}
+        ]
+      }
+
     }
   },
   created() {
@@ -547,7 +706,6 @@ export default {
     _classStatus(row){
       return ClassStatus(row.B_type)
     },
-    //导入导出
     //模板导出
     stuInfo_export(){
       this.$confirm('确定下载学员信息模板？', '模板下载', {
@@ -742,7 +900,121 @@ export default {
     //用户费用登记
     handleYHDJ(value){
       this.banji_id = value.id
+      this.YHform.detail = [
+        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+      ]
       this.YHOpen = true
+    },
+    addDomainYH(){
+      this.YHform.detail.push(
+      {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+      )
+    },
+    removeYHDomain(item){
+      let index = this.YHform.detail.indexOf(item)
+      if (index !== -1) {
+        this.YHform.detail.splice(index, 1)
+      }
+    },
+    resetYHForm(){
+      this.YHform.detail = [
+        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+      ]
+    },
+    CwYHSubmit(){
+      this.YHform.detail.forEach(item =>{
+        item.em_pay = parseFloat(item.em_jbCost) + parseFloat(item.em_cxCost) + parseFloat(item.em_dbCost)
+        console.log(item)
+        addEmDetails(item).then(res=>{
+          Message.success({
+            message: '员工费用增加成功',
+            showClose: true
+          })
+          this.YHOpen = false
+        }).catch(err=>{
+          Message.error({
+            message: err,
+            showClose: true
+          })
+        })
+      })
+    },
+    //教师费用登记
+    handleJSDJ(value){
+      this.JSOpen = true
+      this.banji_id = value.id
+      this.JSform.detail = [
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+      ]
+    },
+    addDomainJS(){
+      this.JSform.detail.push(
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+      )
+    },
+    removeJSDomain(item){
+      let index = this.JSform.detail.indexOf(item)
+      if (index !== -1) {
+        this.JSform.detail.splice(index, 1)
+      }
+    },
+    resetJSForm(){
+      this.JSform.detail = [
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+      ]
+    },
+    CwJSSubmit(){
+      this.JSform.detail.forEach(item =>{
+        addSubsidyPayment(item).then(res=>{
+          Message.success({
+            message: '教师费用登记成功',
+            showClose: true
+          })
+          this.JSOpen = false
+        }).catch(err=>{
+          Message.error({
+            message: err,
+            showClose: true
+          })
+        })
+      })
+    },
+    //开班费用补贴
+    handleKBDJ(value){
+      this.banji_id = value.id
+      this.KBform.detail = [
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+      ]
+      this.KBOpen = true
+    },
+    addDomainKB(){
+      this.KBform.detail.push(
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+      )
+    },
+    removeKBDomain(item){
+      let index = this.KBform.detail.indexOf(item)
+      if (index !== -1) {
+        this.KBform.detail.splice(index, 1)
+      }
+    },
+    resetKBForm(){
+      this.KBform.detail = [
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+      ]
+    },
+    CwKBSubmit(){
+      this.KBform.detail.forEach(item =>{
+        addPayDetails(item).then(res=>{
+          Message.success({
+            message: '开班费用登记成功',
+            showClose: true
+          })
+          this.KBOpen = false
+        }).catch(err=>{
+          Message.error(err)
+        })
+      })
     }
   }
 }
