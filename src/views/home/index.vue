@@ -39,8 +39,10 @@
     <div>
         <el-button @click="exportWord">导出出勤表</el-button>
     </div>
+
     <div>
         <el-button @click="SeeClass">点击按钮</el-button>
+        <iframe style="width: 100%;height: 100%" :src="src" width="100%" height="100%"></iframe>
     </div>
   </div>
 </template>
@@ -55,6 +57,11 @@ import {saveAs} from 'file-saver';
 import PizZipUtils from 'pizzip/utils/index'
 import {getAllFile} from "../../api/studentsInfo/allFile";
 import {download, DownLoadCos, getDownLoadCos} from "../../utils/cos";
+import {getBanJi, listBanJi} from "../../api/studentsInfo/banji";
+import {listSubsidyPayment} from "../../api/finance/subsidyPayment";
+import {listEmDetails} from "../../api/finance/emDetails";
+import {listSettleAccounts} from "../../api/finance/settleAccounts";
+import {listPayDetails} from "../../api/finance/payDetails";
 export default {
     name: 'home',
     data() {
@@ -67,8 +74,38 @@ export default {
         Secret: {},
         state1: '',
         restaurants: [],
+        banji: {},
+        settleList: {},
+        settle: {
+          consumables: 0,
+          material: 0,
+          field: 0,
+          conference: 0,
+          appraisal: 0,
+          reception: 0,
+          traffic: 0,
+          automobile: 0,
+          lodging: 0,
+          life: 0,
+        },
+        src: '',
+        data: {
+          count: '',
+          day: '',
+          adCost: 0,
+          teCost: 0,
+          shift: 0,
+          overtime: 0,
+          travel: 0,
+          costCount: 0,
+          empCount: 0,
+        },
+        emp: {},
+        terd: {},
+        adrd: {},
         selectionList: [],
-        tableData: [{
+        tableData: [
+          {
           id: 1,
           name: 'test',
           gender: '男',
@@ -87,7 +124,73 @@ export default {
       }
     },
     created(){
-
+      getBanJi(1).then(res =>{
+        this.banji = res.data
+      })
+      let o = {
+        te_s: 1,
+        ad_s: 1,
+        em_s: 1,
+        se_bj: 1,
+      }
+      listSubsidyPayment(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        this.terd = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.teCost += parseFloat(item.te_pay)
+        })
+      })
+      listEmDetails(o).then(res =>{
+        if(res.data.results.length < 1 ){
+          return
+        }
+        this.emp = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.shift += parseFloat(item.em_dbCost)
+          this.data.overtime += parseFloat(item.em_jbCost)
+          this.data.travel += parseFloat(item.em_cxCost)
+          this.data.empCount += parseFloat(item.em_pay)
+        })
+      })
+      listSettleAccounts(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        res.data.results.forEach(item =>{
+          if(item.se_types === 1){
+            this.settle.consumables += parseFloat(item.se_pay)
+          }else if(item.se_types === 2){
+            this.settle.material += parseFloat(item.se_pay)
+          }else if(item.se_types === 3){
+            this.settle.field += parseFloat(item.se_pay)
+          }else if(item.se_types === 4){
+            this.settle.conference += parseFloat(item.se_pay)
+          }else if(item.se_types === 5){
+            this.settle.appraisal += parseFloat(item.se_pay)
+          }else if(item.se_types === 6){
+            this.settle.reception += parseFloat(item.se_pay)
+          }else if(item.se_types === 7){
+            this.settle.traffic += parseFloat(item.se_pay)
+          }else if(item.se_types === 8){
+            this.settle.automobile += parseFloat(item.se_pay)
+          }else if(item.se_types === 9){
+            this.settle.lodging += parseFloat(item.se_pay)
+          }else if(item.se_types === 10){
+            this.settle.life += parseFloat(item.se_pay)
+          }
+        })
+      })
+      listPayDetails(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        this.adrd = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.adCost += parseFloat(item.ad_pay)
+        })
+      })
     },
     methods:{
       async handle(ev){
@@ -183,21 +286,54 @@ export default {
       //   xlsx.writeFile(book,`学生信息模板.xls`);
       // }
       exportWord(){
-        PizZipUtils.getBinaryContent("static/word/roster.docx", (error, content)=> {
+        PizZipUtils.getBinaryContent("static/word/financial.docx", (error, content)=> {
           if(error){
             throw error
           }
           let zip = new PizZip(content)
           let doc = new Docxtemplater().loadZip(zip)
           doc.setData({
-            title: 'test',
-            table: this.tableData
+            product: this.banji.BT.tp_projectName,
+            banName: this.banji.BClass_name,
+            address: this.banji.BClass_address,
+            count: 50,
+            day: '',
+            teName: this.banji.BLecturer,
+            BanZR: this.banji.BHead_teacher,
+            startYear: this.banji.BCStartTime.split('-')[0],
+            startmonth: this.banji.BCStartTime.split('-')[1],
+            startDay: this.banji.BCStartTime.split('-')[2],
+            endYear: this.banji.BCEndTime.split('-')[0],
+            endMonth: this.banji.BCEndTime.split('-')[1],
+            endDay: this.banji.BCEndTime.split('-')[2],
+            preIncome: parseFloat(this.banji.BGov_fee)*50,
+            profit: this.settle.profit,
+            consumables: this.settle.consumables,
+            material: this.settle.material,
+            field: this.settle.field,
+            conference: this.settle.conference,
+            appraisal: this.settle.appraisal,
+            reception: this.settle.reception,
+            traffic: this.settle.traffic,
+            automobile: this.settle.automobile,
+            lodging: this.settle.lodging,
+            life: this.settle.life,
+            dept: this.banji.BDepartment,
+            adCost: this.data.adCost,
+            teCost: this.data.teCost,
+            shift: this.data.shift,
+            overtime: this.data.overtime,
+            travel: this.data.travel,
+            costCount: this.data.costCount,
+            emp: this.emp,
+            empCount: this.data.empCount,
+            terd: this.terd,
+            adrd: this.adrd,
           })
-        try{
+        try {
           doc.render()
         }catch (error) {
           this.$message.error('导出花名册失败')
-          console.log(error)
           throw error
         }
         let out = doc.getZip().generate({
@@ -205,44 +341,13 @@ export default {
           mimeType:
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         }); //Output the document using Data-URI
-        saveAs(out, "output.docx");
+          // console.log(out)
+          let file = new window.File([out], 'file',{type: 'file'})
+          window.URL = window.URL ||  window.webkitURL;
+          let blobUrl = window.URL.createObjectURL(file);
+          this.src = blobUrl;
+          // saveAs(out, "开办费用结算表.docx");
         })
-
-        // PizZipUtils.getBinaryContent("static/word/Attendance.docx", (error, content)=>{
-        //   if(error){
-        //     throw error
-        //   }
-        //   let zip = new PizZip(content)
-        //   let doc = new Docxtemplater().loadZip(zip)
-        //
-        //   doc.setData({
-        //     title: 'test',
-        //     table: this.tableData,
-        //     loop: [
-        //       {
-        //         startTime: '3月18日'
-        //       },
-        //       {
-        //         startTime: '3月19日'
-        //       }
-        //     ],
-        //     company: '高创公司',
-        //     time: '3月18日-3月19日',
-        //     major: '茶艺师',
-        //     grade: ''
-        //   })
-        //   try{
-        //     doc.render()
-        //   }catch (e) {
-        //     console.log(e)
-        //     throw e
-        //   }
-        //   let out = doc.getZip().generate({
-        //     type: 'blob',
-        //     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        //   });
-        //   saveAs(out, "test.docx")
-        // })
       },
       //查看课程表
       SeeClass(){

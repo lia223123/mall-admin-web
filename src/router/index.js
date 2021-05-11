@@ -86,17 +86,17 @@ export const constantRouterMap = [
       }
     ]
   },
-  {
-    path: '',
-    component: Layout,
-    redirect: '/document',
-    children: [{
-      path: 'document',
-      name: 'document',
-      component: ()=>import('@/views/document/index'),
-      meta: {title: '公司资料', icon: 'home'}
-    }]
-  },
+  // {
+  //   path: '',
+  //   component: Layout,
+  //   redirect: '/document',
+  //   children: [{
+  //     path: 'document',
+  //     name: 'document',
+  //     component: ()=>import('@/views/document/index'),
+  //     meta: {title: '公司资料', icon: 'home'}
+  //   }]
+  // },
   {
     path: '/fileCom',
     component: Layout,
@@ -108,17 +108,17 @@ export const constantRouterMap = [
       meta: {title: '公司单位', icon: 'product'}
     },]
   },
-  // {
-  //   path: '',
-  //   component: Layout,
-  //   redirect: '/home',
-  //   children: [{
-  //     path: 'home',
-  //     name: 'home',
-  //     component: () => import('@/views/home/index'),
-  //     meta: {title: '首页', icon: 'home'}
-  //   }]
-  // },
+  {
+    path: '',
+    component: Layout,
+    redirect: '/home',
+    children: [{
+      path: 'home',
+      name: 'home',
+      component: () => import('@/views/home/index'),
+      meta: {title: '首页', icon: 'home'}
+    }]
+  },
   {
     path: '/essential',
     component: Layout,
