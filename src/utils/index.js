@@ -234,11 +234,11 @@ export function ArrayCompare(newArray,oldArray){
 export function CWInfo(num){
   switch (num) {
     case 1 : return '耗材费'
-    case 2 : return '教材费'
+    case 2 : return '教材费；复印费'
     case 3 : return '场地费'
-    case 4 : return '会务费'
+    case 4 : return '租赁费'
     case 5 : return '鉴定费'
-    case 6 : return '接待费'
+    case 6 : return '餐费'
     case 7 : return '交通费'
     case 8 : return '汽车费'
     case 9 : return '食宿费'
@@ -253,10 +253,10 @@ export function CWInfo(num){
 }
 export function FCWInfo(num){
   switch (num) {
-    case '耗材费' : return 1
-    case '教材费' : return 2
+    case '耗材费;' : return 1
+    case '教材费;复印费' : return 2
     case '场地费' : return 3
-    case '会务费' : return 4
+    case '租赁费' : return 4
     case '鉴定费' : return 5
     case '接待费' : return 6
     case '交通费' : return 7

@@ -42,11 +42,13 @@
             type="text"
             icon="el-icon-wallet"
             @click="buttonClick(scope.row)"
+            :disabled="scope.row.B_type === 3"
           >学员信息导入</el-button><br>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-wallet">学员信息导出</el-button>
+            icon="el-icon-wallet"
+          >学员信息导出</el-button>
         </template>
       </el-table-column>
       <el-table-column label="财务登记">
@@ -56,6 +58,7 @@
             type="text"
             icon="el-icon-wallet"
             @click="handleDJ(scope.row)"
+            :disabled="scope.row.B_type === 3"
           >基本费用登记
           </el-button><br>
           <el-button
@@ -63,6 +66,7 @@
             type="text"
             icon="el-icon-wallet"
             @click="handleYHDJ(scope.row)"
+            :disabled="scope.row.B_type === 3"
           >员工费用登记
           </el-button><br>
           <el-button
@@ -70,6 +74,7 @@
             type="text"
             icon="el-icon-wallet"
             @click="handleJSDJ(scope.row)"
+            :disabled="scope.row.B_type === 3"
           >教师费用登记
           </el-button><br>
           <el-button
@@ -77,6 +82,7 @@
             type="text"
             icon="el-icon-wallet"
             @click="handleKBDJ(scope.row)"
+            :disabled="scope.row.B_type === 3"
           >开班费用登记
           </el-button><br>
 
@@ -96,35 +102,10 @@
           <!--            icon="el-icon-collection-tag"-->
           <!--            @click="handleHeSuan(scope.row)"-->
           <!--          >招生明细</el-button>-->
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-wallet"
-            @click="handleDR(scope.row)"
-          >财务费用确认
-          </el-button>
         </template>
       </el-table-column>
       <el-table-column label="流程操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-s-flag"
-            @click="addClassStatus(scope.row)"
-            v-if="scope.row.B_type === 1"
-          >
-            开班
-          </el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-s-flag"
-            @click="addClassStatus(scope.row)"
-            v-if="scope.row.B_type === 2"
-          >
-            结束
-          </el-button><br>
           <el-button
             size="mini"
             type="text"
@@ -171,8 +152,23 @@
       </el-table>
     </el-dialog>
 <!--财务详情-->
-    <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1000px" append-to-body :before-close="handleClose">
-
+    <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1200px" append-to-body :before-close="handleClose">
+      <div v-html="html1" style="text-align: center; margin: 0 200px"></div>
+      <div style="margin-left: 700px;margin-top: 20px">
+        <el-button
+          icon="el-icon-wallet"
+          type="primary"
+          @click="handleCWDown"
+        >下载
+        </el-button>
+        <el-button
+        icon="el-icon-wallet"
+        type="primary"
+        @click="addClassStatus"
+        v-show="this.banji.B_type < 3"
+        >财务费用确认
+        </el-button>
+      </div>
     </el-dialog>
     <el-dialog title="基本费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
         <el-form :model="CWform" ref="JBdynamicForm" label-width="60px" class="demo-dynamic">
@@ -377,7 +373,6 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-
   </div>
 </template>
 
@@ -398,10 +393,19 @@ import {addBanJi, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../ap
 import xlsx from "xlsx";
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {addStudent} from "../../../api/studentsInfo/student";
-import {addSettleAccounts} from "../../../api/finance/settleAccounts";
-import {addEmDetails} from "../../../api/finance/emDetails";
-import {addSubsidyPayment, editSubsidyPayment} from "../../../api/finance/subsidyPayment";
-import {addPayDetails} from "../../../api/finance/payDetails";
+import {addSettleAccounts, listSettleAccounts} from "../../../api/finance/settleAccounts";
+import {addEmDetails, listEmDetails} from "../../../api/finance/emDetails";
+import {addSubsidyPayment, editSubsidyPayment, listSubsidyPayment} from "../../../api/finance/subsidyPayment";
+import {addPayDetails, listPayDetails} from "../../../api/finance/payDetails";
+import PizZipUtils from "pizzip/utils";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import mammoth from "mammoth";
+import {saveAs} from "file-saver"
+import {addSeCount} from "../../../api/finance/seCount";
+import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
+
+let that
 export default {
   name: "index",
   data(){
@@ -450,11 +454,11 @@ export default {
       ],
       CWinfo: [
         {name: '耗材费',value: 1},
-        {name: '教材费',value: 2},
+        {name: '教材费；复印费',value: 2},
         {name: '场地费',value: 3},
-        {name: '会务费',value: 4},
+        {name: '租赁费',value: 4},
         {name: '鉴定费',value: 5},
-        {name: '接待费',value: 6},
+        {name: '餐费',value: 6},
         {name: '交通费',value: 7},
         {name: '汽车费',value: 8},
         {name: '食宿费',value: 9},
@@ -495,9 +499,69 @@ export default {
         detail: [
           {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: '', key: Date.now()}
         ]
-      }
-
+      },
+      //预览html
+      html1: '',
+      //财务模块的预览数据
+      settleList: {},
+      settle: {
+        consumables: 0,
+        material: 0,
+        field: 0,
+        conference: 0,
+        appraisal: 0,
+        reception: 0,
+        traffic: 0,
+        automobile: 0,
+        lodging: 0,
+        life: 0,
+      },
+      banji: {},
+      data: {
+        count: 0,
+        day: 0,
+        adCost: 0,
+        teCost: 0,
+        shift: 0,
+        overtime: 0,
+        travel: 0,
+        costCount: 0,
+        empCount: 0,
+      },
+      emp: {},
+      terd: {},
+      adrd: {},
+      selectionList: [],
+      //下载输出流
+      down: '',
+      //财务明细字段
+      SeCount: {
+        sc_part: '',
+        sc_bName: '',
+        sc_date: '',
+        sc_hc: '',
+        sc_j: '',
+        sc_c: '',
+        sc_hw: '',
+        sc_d: '',
+        sc_jd: '',
+        sc_jt: '',
+        sc_qc: '',
+        sc_ss: '',
+        sc_sh: '',
+        sc_tc: '',
+        sc_sk: '',
+        sc_db: '',
+        sc_jb: '',
+        sc_cxc: '',
+        sc_count: '',
+      },
+      //判断学生上传状态
+      ad_status: 0
     }
+  },
+  beforeCreate() {
+    that = this
   },
   created() {
     this.getList()
@@ -543,6 +607,56 @@ export default {
         BClass_photo: undefined,
         B_type: undefined,
       };
+      this.settleList = {};
+      this.settle = {
+          consumables: 0,
+          material: 0,
+          field: 0,
+          conference: 0,
+          appraisal: 0,
+          reception: 0,
+          traffic: 0,
+          automobile: 0,
+          lodging: 0,
+          life: 0,
+      };
+      this.banji = {};
+      this.data = {
+          count: 0,
+          day: 0,
+          adCost: 0,
+          teCost: 0,
+          shift: 0,
+          overtime: 0,
+          travel: 0,
+          costCount: 0,
+          empCount: 0,
+      }
+      this.SeCount = {
+          sc_part: '',
+          sc_bName: '',
+          sc_date: '',
+          sc_hc: '',
+          sc_j: '',
+          sc_c: '',
+          sc_hw: '',
+          sc_d: '',
+          sc_jd: '',
+          sc_jt: '',
+          sc_qc: '',
+          sc_ss: '',
+          sc_sh: '',
+          sc_tc: '',
+          sc_sk: '',
+          sc_db: '',
+          sc_jb: '',
+          sc_cxc: '',
+          sc_count: '',
+      },
+      this.emp = {}
+      this.terd = {}
+      this.adrd = {}
+      this.selectionList = []
     },
     //查询参数重置
     resetQuery(){
@@ -658,40 +772,53 @@ export default {
       }
     },
     //更改状态
-    addClassStatus(row){
-      if(row.B_type === 1){
-        this.$confirm('确定开班编号为' + row.BClass_code + '的班级？', '开班',{
-          confirmButtonText: '确定',
-          cancelButtonText: '确定',
-          type: "warning"
-        }).then(()=>{
-          this.form = row
-          this.form.B_type++
-          editBanJi(this.form).then(res=>{
-              Message.success({
-                message: '班级编号' + this.form.BClass_code + '开班成功',
-                showClose: true
-              })
-            this.reset()
-          })
-        })
-      }else{
-        this.$confirm('确定结束编号为' + row.BClass_code + '的班级？', '结束',{
+    addClassStatus(){
+        this.$confirm('确定结束编号为' + this.banji.BClass_code + '的班级？', '结束',{
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: "warning"
         }).then(()=>{
-          this.form = row
-          this.form.B_type++
-          editBanJi(this.form).then(res=>{
-              Message.success({
-                message: '班级编号' + this.form.BClass_code + '课程结束',
-                showClose: true
-              })
-            this.reset()
+          this.form = this.banji
+          this.form.B_type = 3
+          this.SeCount = {
+            sc_part: this.banji.BDepartment,
+            sc_bName: this.banji.BClass_name,
+            sc_date: this.banji.BCEndTime,
+            sc_hc: this.settle.consumables,
+            sc_j: this.settle.material,
+            sc_c: this.settle.field,
+            sc_hw: this.settle.conference,
+            sc_d: this.settle.appraisal,
+            sc_jd: this.settle.reception,
+            sc_jt: this.settle.traffic,
+            sc_qc: this.settle.automobile,
+            sc_ss: this.settle.lodging,
+            sc_sh: this.settle.life,
+            sc_tc: this.data.adCost,
+            sc_sk: this.data.teCost,
+            sc_db: this.data.shift,
+            sc_jb: this.data.overtime,
+            sc_cxc: this.data.travel,
+            sc_count: this.data.costCount,
+          }
+          addSeCount(this.SeCount).then(res=>{
+            Message.success({
+              message: '班级编号' + this.form.BClass_code + '费用结算结束',
+              showClose: true
+            })
+            editBanJi(this.form).then(res=>{
+              this.reset()
+              this.getList()
+              this.CwOpen = false
+            }).catch(err=>{
+              Message.error(err)
+            })
+          }).catch(err=>{
+            console.log(err)
+            Message.error(err)
           })
+
         })
-      }
     },
     //表格参数渲染
     _Bis_fee_applied(row){
@@ -781,7 +908,17 @@ export default {
       let workbook = xlsx.read(data, {type: "binary"}),
         worksheet = workbook.Sheets[workbook.SheetNames[0]];
       A.forEach(item => {
-        NewArr.push(worksheet[item + '1'].v)
+        try {
+          NewArr.push(worksheet[item + '1'].v)
+        }catch(e)
+        {
+          Message.warning({
+            message: '请上传系统下载的模板',
+            showClose: true
+          })
+          throw e
+        }
+
       })
       if (ArrayCompare(NewArr, OldArr)) {
         data = xlsx.utils.sheet_to_json(worksheet)
@@ -798,7 +935,7 @@ export default {
             type = "string" ? v = String(v) : null;
             obj[key] = v
           }
-          obj.STUBJ = this.banji_id
+          // obj.STUBJ = this.banji_id
           arr.push(obj);
         });
         this.importInfo = arr
@@ -818,25 +955,57 @@ export default {
           background: 'rgba(0, 0, 0, 0.7)'
         })
         this.importInfo.forEach(item =>{
-          item.STU_education = Fstu_educations(item.STU_education)
-          item.STU_insureType = FInsureType(item.STU_insureType)
-          item.STU_gender = FformatSex(item.STU_gender)
-          item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
-          item.STU_filed_account = FisNot(item.STU_filed_account)
-          addStudent(item).then(res=>{
-            loading.close()
-            Message.success({
-              message: '导入成功',
-              showClose: true
+          if(typeof(item.STU_gender) === 'string'){
+            item.STU_education = Fstu_educations(item.STU_education)
+            item.STU_insureType = FInsureType(item.STU_insureType)
+            item.STU_gender = FformatSex(item.STU_gender)
+            item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
+            item.STU_filed_account = FisNot(item.STU_filed_account)
+          }
+          item.STUBJ = []
+          item.STUBJ.push(this.banji_id)
+          if(item.AD_cid !== "") {
+            let o = {
+              AD_cid: item.AD_cid
+            }
+            listAdTeacher(o).then(res => {
+              if (res.data.results.length < 1) {
+                Message.warning({
+                  message: item.AD_name + "未在系统录入，请录入后再导入学员信息",
+                  showClose: true
+                })
+                item.StuAD = ''
+                that.ad_status = 1
+              } else {
+                item.StuAD = res.data.results[0].id
+              }
             })
-          }).catch(err=>{
-            Message.error({
-              message: err,
-              showClose: true
-            })
-            loading.close()
-          })
+          }
         })
+        //可能修改
+        setTimeout(function () {
+          if(that.ad_status === 0 ){
+            addStudent(that.importInfo).then(res=>{
+              loading.close()
+              that.ImOpen = false
+              that.importInfo = []
+              Message.success({
+                message: '导入成功',
+                showClose: true
+              })
+            }).catch(err=>{
+              Message.error({
+                message: err,
+                showClose: true
+              })
+              loading.close()
+            })
+          }else {
+            loading.close()
+            Message.error('导入失败')
+          }
+        },2000)
+
       }else Message.warning({
         message: '请先选择导入文件',
         showClose: true
@@ -1015,6 +1184,168 @@ export default {
           Message.error(err)
         })
       })
+    },
+    //获取财务数据
+    handledetail(row){
+      this.getCWData(row.id)
+      const loading = this.$loading({
+        lock: true,
+        text: '正在生成财务模板，请稍后',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      setTimeout(function () {
+        that.exportWord()
+        that.CwOpen = true
+        that.data.costCount = parseFloat(that.settle.consumables) +
+          parseFloat(that.settle.material) + parseFloat(that.settle.field) +
+          parseFloat(that.settle.conference) + parseFloat(that.settle.appraisal) +
+          parseFloat(that.settle.reception) + parseFloat(that.settle.traffic) +
+          parseFloat(that.settle.automobile) + parseFloat(that.settle.lodging) +
+          parseFloat(that.settle.life) + parseFloat(that.data.adCost) +
+          parseFloat(that.data.teCost) + parseFloat(that.data.empCount);
+        loading.close()
+      },2000)
+    },
+    getCWData(id){
+      getBanJi(id).then(res =>{
+        this.banji = res.data
+      })
+      let o = {
+        te_s: id,
+        ad_s: id,
+        em_s: id,
+        se_bj: id,
+      }
+      listSubsidyPayment(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        this.terd = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.teCost += parseFloat(item.te_pay)
+        })
+      })
+      listEmDetails(o).then(res =>{
+        if(res.data.results.length < 1 ){
+          return
+        }
+        this.emp = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.shift += parseFloat(item.em_dbCost)
+          this.data.overtime += parseFloat(item.em_jbCost)
+          this.data.travel += parseFloat(item.em_cxCost)
+          this.data.empCount += parseFloat(item.em_pay)
+        })
+      })
+      listSettleAccounts(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        res.data.results.forEach(item =>{
+          if(item.se_types === 1){
+            this.settle.consumables += parseFloat(item.se_pay)
+          }else if(item.se_types === 2){
+            this.settle.material += parseFloat(item.se_pay)
+          }else if(item.se_types === 3){
+            this.settle.field += parseFloat(item.se_pay)
+          }else if(item.se_types === 4){
+            this.settle.conference += parseFloat(item.se_pay)
+          }else if(item.se_types === 5){
+            this.settle.appraisal += parseFloat(item.se_pay)
+          }else if(item.se_types === 6){
+            this.settle.reception += parseFloat(item.se_pay)
+          }else if(item.se_types === 7){
+            this.settle.traffic += parseFloat(item.se_pay)
+          }else if(item.se_types === 8){
+            this.settle.automobile += parseFloat(item.se_pay)
+          }else if(item.se_types === 9){
+            this.settle.lodging += parseFloat(item.se_pay)
+          }else if(item.se_types === 10){
+            this.settle.life += parseFloat(item.se_pay)
+          }
+        })
+      })
+      listPayDetails(o).then(res =>{
+        if(res.data.results.length < 1){
+          return
+        }
+        this.adrd = res.data.results
+        res.data.results.forEach(item =>{
+          this.data.adCost += parseFloat(item.ad_pay)
+        })
+      })
+    },
+    //预览和下载财务模板
+    exportWord(){
+      PizZipUtils.getBinaryContent("static/word/financial.docx", (error, content)=> {
+        if(error){
+          throw error
+        }
+        let zip = new PizZip(content)
+        let doc = new Docxtemplater().loadZip(zip)
+        doc.setData({
+          product: this.banji.BT.tp_projectName,
+          banName: this.banji.BClass_name,
+          address: this.banji.BClass_address,
+          count: 50,
+          day: '',
+          teName: this.banji.BLecturer,
+          BanZR: this.banji.BHead_teacher,
+          startYear: this.banji.BCStartTime.split('-')[0],
+          startmonth: this.banji.BCStartTime.split('-')[1],
+          startDay: this.banji.BCStartTime.split('-')[2],
+          endYear: this.banji.BCEndTime.split('-')[0],
+          endMonth: this.banji.BCEndTime.split('-')[1],
+          endDay: this.banji.BCEndTime.split('-')[2],
+          preIncome: parseFloat(this.banji.BGov_fee)*50,
+          profit: this.settle.profit,
+          consumables: this.settle.consumables,
+          material: this.settle.material,
+          field: this.settle.field,
+          conference: this.settle.conference,
+          appraisal: this.settle.appraisal,
+          reception: this.settle.reception,
+          traffic: this.settle.traffic,
+          automobile: this.settle.automobile,
+          lodging: this.settle.lodging,
+          life: this.settle.life,
+          dept: this.banji.BDepartment,
+          adCost: this.data.adCost,
+          teCost: this.data.teCost,
+          shift: this.data.shift,
+          overtime: this.data.overtime,
+          travel: this.data.travel,
+          costCount: this.data.costCount,
+          emp: this.emp,
+          empCount: this.data.empCount,
+          terd: this.terd,
+          adrd: this.adrd,
+        })
+        try {
+          doc.render()
+        }catch (error) {
+          this.$message.error('财务模板系统出现漏洞，请联系技术人员')
+          throw error
+        }
+        this.down = doc.getZip().generate({
+          type: "blob",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        })
+        let out = doc.getZip().generate({
+          type: "nodebuffer",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }); //Output the document using Data-URI
+        mammoth.convertToHtml({arrayBuffer: out}).then(result =>{
+          this.html1 = result.value.replaceAll('<table>','<table border="1" style="margin-top:20px; width: 800px; background-color: LightGray">').replaceAll('undefined','');
+        }).done()
+        // saveAs(out, "开办费用结算表.docx");
+      })
+    },
+    handleCWDown(){
+      saveAs(this.down,this.banji.BClass_name + "费用结算表.docx")
     }
   }
 }

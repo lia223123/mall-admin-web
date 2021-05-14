@@ -459,7 +459,7 @@ export default {
         Bis_closed: undefined,
         BClass_photo: undefined,
         BT: undefined,
-        B_type: 1,
+        B_type: 2,
         BT_tp_projectName: undefined
       };
       this.Proform = {

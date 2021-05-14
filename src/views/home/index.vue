@@ -40,9 +40,8 @@
         <el-button @click="exportWord">导出出勤表</el-button>
     </div>
 
-    <div>
-        <el-button @click="SeeClass">点击按钮</el-button>
-        <iframe style="width: 100%;height: 100%" :src="src" width="100%" height="100%"></iframe>
+    <div v-html="html1" style="text-align: center; width: 800px">
+<!--        <el-button @click="SeeClass">点击按钮</el-button>-->
     </div>
   </div>
 </template>
@@ -54,7 +53,7 @@ import {Message} from "element-ui";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import {saveAs} from 'file-saver';
-import PizZipUtils from 'pizzip/utils/index'
+import PizZipUtils from 'pizzip/utils/index';
 import {getAllFile} from "../../api/studentsInfo/allFile";
 import {download, DownLoadCos, getDownLoadCos} from "../../utils/cos";
 import {getBanJi, listBanJi} from "../../api/studentsInfo/banji";
@@ -62,6 +61,7 @@ import {listSubsidyPayment} from "../../api/finance/subsidyPayment";
 import {listEmDetails} from "../../api/finance/emDetails";
 import {listSettleAccounts} from "../../api/finance/settleAccounts";
 import {listPayDetails} from "../../api/finance/payDetails";
+import mammoth from 'mammoth'
 export default {
     name: 'home',
     data() {
@@ -120,7 +120,8 @@ export default {
           ADName: '招生老师',
           ADPhone: '22222222222'
         },
-        ]
+        ],
+        html1: ''
       }
     },
     created(){
@@ -337,17 +338,21 @@ export default {
           throw error
         }
         let out = doc.getZip().generate({
-          type: "blob",
+          type: "nodebuffer",
           mimeType:
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         }); //Output the document using Data-URI
+          // this.src = out
           // console.log(out)
-          let file = new window.File([out], 'file',{type: 'file'})
-          window.URL = window.URL ||  window.webkitURL;
-          let blobUrl = window.URL.createObjectURL(file);
-          this.src = blobUrl;
+          // let file = new window.File([out], 'file',{type: 'file'})
+          // window.URL = window.URL ||  window.webkitURL;
+          // let blobUrl = window.URL.createObjectURL(out);
+          mammoth.convertToHtml({arrayBuffer: out}).then(result =>{
+            this.html1 = result.value.replaceAll('<table>','<table border="1" style="margin-top:20px; width: 800px; background-color: LightGray">').replaceAll('undefined','');
+          }).done()
           // saveAs(out, "开办费用结算表.docx");
         })
+
       },
       //查看课程表
       SeeClass(){
