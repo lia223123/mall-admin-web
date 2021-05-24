@@ -74,7 +74,7 @@
                     maxlength='11' />
         </el-form-item>
         <el-form-item label="银行卡开户行" prop="AD_bankName">
-          <el-input v-model="form.AD_bankName" placeholder="请输入银行卡开户行"/>
+          <el-input v-model="form.AD_bankName" placeholder="请输入银行卡开户行" />
         </el-form-item>
         <el-form-item label="银行卡号" prop="AD_bankCode">
           <el-input v-model="form.AD_bankCode" placeholder="请输入银行卡号" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>

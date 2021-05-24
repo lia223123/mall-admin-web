@@ -52,7 +52,7 @@
           <el-input v-model="form.Com_code" placeholder="请输入公司编号" />
         </el-form-item>
         <el-form-item label="公司电话" prop="Com_tel">
-          <el-input v-model="form.Com_tel" placeholder="请输入公司电话" />
+          <el-input v-model="form.Com_tel" placeholder="请输入公司电话" onkeyup="value=value.replace(/[^\d]/g,'')"/>
         </el-form-item>
         <el-form-item label="公司名称" prop="Com_name">
           <el-input v-model="form.Com_name" placeholder="请输入公司名称" />

@@ -96,7 +96,7 @@
                     <el-input v-model="user.LE_bankName" placeholder="请输入银行开户行" :disabled="isDes"/>
                   </el-form-item>
                   <el-form-item label="银行卡号" prop="LE_bankCode">
-                    <el-input v-model="user.LE_bankCode" placeholder="请输入银行卡号" :disabled="isDes"/>
+                    <el-input v-model="user.LE_bankCode" placeholder="请输入银行卡号" :disabled="isDes" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
@@ -219,21 +219,21 @@ export default {
     },
     //下载文件
     DidCard(){
-      getAllFile().then(res =>{
-        this.Secret = res.data
-      })
       this.$confirm('是否下载讲师编号为' + this.user.LEid + "的讲师身份证？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        DownLoadCos(this.Secret,this.user.LE_idCard01).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch((err)=> {
-          console.log(err)
-          Message.warning({
-            message: '该讲师未上传职业资格证'
+      getAllFile().then(res =>{
+        this.Secret = res.data
+      }).then(()=>{
+          DownLoadCos(this.Secret,this.user.LE_idCard01).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch((err)=> {
+            Message.warning({
+              message: '该讲师未上传讲师身份证'
+            })
           })
         })
       })
@@ -246,13 +246,14 @@ export default {
       }).then(() =>{
         getAllFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.LE_gc).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=> {
-          Message.warning({
-            message: '该讲师未上传毕业证'
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.LE_gc).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=> {
+            Message.warning({
+              message: '该讲师未上传毕业证'
+            })
           })
         })
       })
@@ -265,13 +266,14 @@ export default {
       }).then(() =>{
         getLeFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.LE_pqc).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=> {
-          Message.warning({
-            message: '该讲师未上传职业资格证'
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.LE_pqc).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=> {
+            Message.warning({
+              message: '该讲师未上传职业资格证'
+            })
           })
         })
       })
@@ -284,15 +286,16 @@ export default {
       }).then(() =>{
         getLeFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.LE_contents).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=>{
-          Message.warning({
-            message: '该讲师未上传协议书'
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.LE_contents).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=>{
+            Message.warning({
+              message: '该讲师未上传协议书'
+            })
           })
-      })
+        })
       })
     },
     //保存
@@ -304,7 +307,6 @@ export default {
         });
         this.isDes = true
         this.updateOpen = false
-        this.reset()
         this.getUser(this.id)
       }).catch(error =>{
         this.$message({
@@ -312,6 +314,7 @@ export default {
           type: 'warning'
         });
       })
+      this.reset()
     },
     update(){
       this.isDes = false
@@ -332,11 +335,12 @@ export default {
         this.$refs.LE_pqc.submit()
         this.$refs.LE_contents.submit()
         this.$refs.LE_gc.submit()
-      }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: ''
-        // });
+      }).catch((err) => {
+        console.log(err)
+        this.$message({
+          type: 'info',
+          message: '上传提交失败'
+        });
       });
     },
     //上传
@@ -385,7 +389,7 @@ export default {
         let Secret = response.data
         let key = 'LETeacher/'
         if(this.user.LE_gc){
-          reLoad(Secret,file.file,this.user.LE_gc).then(res=>{
+          reLoad(Secret,file.file, this.user.LE_gc).then(res=>{
             this.$message({
               message: '上传毕业证成功',
               type: 'success',

@@ -26,9 +26,14 @@
       <el-table-column label="身份证" align="center" prop="em_idCard"/>
       <el-table-column label="员工姓名" align="center" prop="em_name"/>
       <el-table-column label="部门" align="center" prop="employee_department"/>
+      <el-table-column label="职位" align="center" prop="position"/>
       <el-table-column label="电话" align="center" prop="UPhone"/>
-      <el-table-column label="性别" align="center" prop="em_sex" :formatter="_sex"/>
-      <el-table-column label="员工类型" align="center" prop="user_type" :formatter="_userType"/>
+      <el-table-column label="邮箱" align="center" prop="email"/>
+      <el-table-column label="角色" align="center" prop="roles">
+        <template slot-scope="scope">
+          <el-tag size="small" v-for="item in scope.row.roles" :key="item.id">{{item.name}}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -54,16 +59,25 @@
           <el-input v-model="form.employee_code" placeholder="请输入员工编号" />
         </el-form-item>
         <el-form-item label="身份证" prop="em_idCard">
-          <el-input v-model="form.em_idCard" placeholder="请输入身份证" />
+          <el-input v-model="form.em_idCard" placeholder="请输入身份证" maxlength="18"/>
         </el-form-item>
         <el-form-item label="员工姓名" prop="em_name">
           <el-input v-model="form.em_name" placeholder="请输入员工姓名" />
         </el-form-item>
         <el-form-item label="手机号码" prop="UPhone">
-          <el-input v-model="form.UPhone" placeholder="请输入手机号码" />
+          <el-input v-model="form.UPhone" placeholder="请输入手机号码" onkeyup="value=value.replace(/[^\d]/g,'')"
+                    maxlength='11'/>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="form.email" placeholder="请输入邮箱"/>
         </el-form-item>
         <el-form-item label="部门" prop="employee_department">
-          <el-input v-model="form.employee_department" placeholder="请输入部门"/>
+          <el-select v-model="form.employee_department" placeholder="请选择部门">
+            <el-option v-for="item in dept" :key="item.name" :label="item.name" :value="item.name"/>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="职位" prop="position">
+          <el-input v-model="form.position" placeholder="请输入职位"/>
         </el-form-item>
         <el-form-item label="用户名账号" prop="username">
           <el-input v-model="form.username" placeholder="请输入账号"/>
@@ -71,18 +85,15 @@
         <el-form-item label="密码" prop="password">
           <el-input placeholder="请输入密码" v-model="form.password" :show-password="true" type="password"></el-input>
         </el-form-item>
-        <el-form-item label="性别" prop="em_sex">
-          <el-select v-model="form.em_sex" placeholder="请选择员工性别">
-            <el-option value="1" label="男"/>
-            <el-option value="2" label="女"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="员工类型" prop="user_type">
-          <el-select v-model="form.user_type" placeholder="请选择员工类型">
-            <el-option value="1" label="普通员工" />
-            <el-option value="2" label="财务" />
-            <el-option value="3" label="管理员" />
-            <el-option value="4" label="超级管理员" />
+<!--        <el-form-item label="性别" prop="em_sex">-->
+<!--          <el-select v-model="form.em_sex" placeholder="请选择员工性别">-->
+<!--            <el-option value="1" label="男"/>-->
+<!--            <el-option value="2" label="女"/>-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
+        <el-form-item label="角色" prop="roles">
+          <el-select v-model="form.roles" multiple  placeholder="请选择角色">
+            <el-option v-for="item in roles" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
       </el-form>
@@ -96,8 +107,8 @@
 
 <script>
 import {addEmployee, deleteEmployee, editEmployee, getEmployee, listEmployee} from "../../../api/employeeInfo/employee";
-import {formatSex, formatUserType} from "../../../utils";
-
+import {listRoles} from "../../../api/employeeInfo/roles"
+import {buildMenu} from "../../../api/login";
 export default {
   name: "index",
   data(){
@@ -132,14 +143,11 @@ export default {
         em_name: [
           {required: true, message: "姓名不能为空", trigger: "blur"}
         ],
-        em_sex: [
-          {required: true, message: "性别不能为空", trigger: "blur"}
-        ],
         UPhone: [
           {required: true, message: "电话不能为空", trigger: "blur"}
         ],
-        user_type: [
-          {required: true, message: "员工类型不能为空", trigger: "blur"}
+        roles: [
+          {required: true, message: "角色不能为空", trigger: "blur"}
         ],
         employee_department: [
           {required: true, message: "部门不能为空", trigger: "blur"}
@@ -150,12 +158,30 @@ export default {
         password: [
           {required: true, message: "密码不能为空", trigger: "blur"}
         ]
-      }
-
+      },
+      //部门选择
+      dept: [
+        {name: '培训一部'},
+        {name: '培训二部'},
+        {name: '培训三部'},
+        {name: '培训四部'},
+        {name: '培训五部'},
+        {name: '财务'},
+        {name: '标书办'},
+      ],
+      roles: []
     }
   },
   created() {
     this.getList()
+    listRoles({
+      r_type: 2
+    }).then(res =>{
+      this.roles = res.data.results
+    })
+    buildMenu().then(res=>{
+      console.log(res)
+    })
   },
   methods:{
     getList(){
@@ -177,6 +203,9 @@ export default {
         user_type: undefined,
         username: undefined,
         password: undefined,
+        position: undefined,
+        email: undefined,
+        roles: []
       };
       this.$refs['form'].resetFields();
     },
@@ -195,9 +224,6 @@ export default {
     handleUpdate(row){
       getEmployee(row.id).then(res =>{
         this.form = res.data;
-        //int转字符串
-        this.form.em_sex = this.form.em_sex.toString();
-        this.form.user_type = this.form.user_type.toString();
         this.open = true;
         this.title = '修改员工信息';
       })
@@ -293,13 +319,13 @@ export default {
         })
       }
     },
-    //表格数据转换
-    _sex(row){
-      return formatSex(row.em_sex)
-    },
-    _userType(row){
-      return formatUserType(row.user_type)
-    }
+    // //表格数据转换
+    // _sex(row){
+    //   return formatSex(row.em_sex)
+    // },
+    // _userType(row){
+    //   return formatUserType(row.user_type)
+    // }
   }
 }
 </script>

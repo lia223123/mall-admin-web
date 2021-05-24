@@ -113,12 +113,12 @@
             <el-tab-pane label="班级基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="()=>{ this.open = true }"  >班级集体照上传</el-button>
-                  <el-button @click="()=>{ this.ClassOpen = true}">课程表上传</el-button>
+                  <el-button @click="()=>{ this.open = true }" type="warning">班级集体照上传</el-button>
+                  <el-button @click="()=>{ this.ClassOpen = true}" type="warning">课程表上传</el-button>
                 </el-form-item>
                 <el-form-item>
-                  <el-button @click="DidCard">班级集体照下载</el-button>
-                  <el-button @click="SeeClass">课程表下载</el-button>
+                  <el-button @click="DidCard" type="primary">班级集体照下载</el-button>
+                  <el-button @click="SeeClass" type="primary">课程表下载</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -184,7 +184,9 @@
                   <el-input v-model="Class.BClass_address" placeholder="请输入开班地" :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="开班部门" prop="BDepartment">
-                  <el-input v-model="Class.BDepartment" placeholder="请输入开班部门" :disabled="isDes"/>
+                  <el-select v-model="Class.BDepartment" placeholder="请开班部门" :disabled="isDes">
+                    <el-option v-for="item in dept" :key="item.name" :label="item.name" :value="item.name"/>
+                  </el-select>
                 </el-form-item>
                 <el-form-item label="开课时间" prop="BCEndTime">
                   <el-col :span="11">
@@ -391,6 +393,14 @@ export default {
         {name: '技师', value: '6'},
         {name: '高级技师', value: '7'},
       ],
+      //部门选择
+      dept: [
+        {name: '培训一部'},
+        {name: '培训二部'},
+        {name: '培训三部'},
+        {name: '培训四部'},
+        {name: '培训五部'},
+      ],
       //需要的参数
       lecturers: {},
       dialogImageUrl: '',
@@ -416,34 +426,62 @@ export default {
     },
     //下载文件
     DidCard(){
-      getAllFile().then(res =>{
-        this.Secret = res.data
-      })
       this.$confirm('是否下载班级编号为' + this.Class.BClass_code + "的班级集体照？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        DownLoadCos(this.Secret,this.Class.BClass_photo).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(() =>{
-          Message.warning({
-            message: '该班级未上传班级集体照',
-            showClose: true
+      const loading = this.$loading({
+        lock: true,
+        text: '正在获取资源下载，请稍后',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+        getAllFile().then(res =>{
+          this.Secret = res.data
+        }).then(()=>{
+            loading.close()
+            DownLoadCos(this.Secret,this.Class.BClass_photo).then(res=>{
+                window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+              }
+            ).catch(() =>{
+              loading.close()
+              Message.warning({
+                message: '该班级未上传班级集体照',
+                showClose: true
+              })
+            })
           })
         })
-      })
     },
     //查看课程表
     SeeClass(){
-      getAllFile().then(res =>{
-        this.Secret = res.data
-      })
-      DownLoadCos(this.Secret, "BanJi/d80f66fd1619661774974.xls").then(res =>{
-        console.log(res)
-      }).catch(err=>{
-        console.log(err)
+      this.$confirm('是否下载班级编号为' + this.Class.BClass_code + "的班级课程表？","警告", {
+        confirmButtonText: '确定',
+        cancelButtonText: "取消",
+        type: 'warning',
+      }).then(() =>{
+        const loading = this.$loading({
+          lock: true,
+          text: '正在获取资源下载，请稍后',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        getAllFile().then(res =>{
+          this.Secret = res.data
+        }).then(()=>{
+          loading.close()
+          DownLoadCos(this.Secret,this.Class.BCourseTable).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(() =>{
+            loading.close()
+            Message.warning({
+              message: '该班级未上传班级课程表',
+              showClose: true
+            })
+          })
+        })
       })
     },
     //保存
@@ -452,7 +490,9 @@ export default {
         this.isDes = true
         this.getClass(this.id)
         this.open = false
+        this.ClassOpen = false
         // this.$refs.BClass_photo.clearFiles()
+        // this.$refs.BCourseTable.clearFiles()
         this.$message({
           message: '修改成功',
           type: 'success'
@@ -474,91 +514,93 @@ export default {
     DidLoad(file){
       getAllFile().then(res =>{
         this.Secret = res.data
-      })
-      this.$confirm("是否上传班级照",'警告',{
-        confirmButtonText: '确定',
-        cancelButtonText: "取消",
-        type: 'warning',
       }).then(()=>{
-        if(!this.Class.BClass_photo){
-          LEupload(this.Secret,file.file,"BanJi/").then(res=>{
-            this.Class.BClass_photo = res
-            this.$message({
-              message: '上传班级照成功',
-              type: 'success',
-              showClose: true
+        this.$confirm("是否上传班级照",'警告',{
+          confirmButtonText: '确定',
+          cancelButtonText: "取消",
+          type: 'warning',
+        }).then(()=>{
+          if(!this.Class.BClass_photo){
+            LEupload(this.Secret,file.file,"BanJi/").then(res=>{
+              this.Class.BClass_photo = res
+              this.$message({
+                message: '上传班级照成功',
+                type: 'success',
+                showClose: true
+              })
+              file.onSuccess()
+            }).catch(error=>{
+              this.$message({
+                message: '上传班级照失败，请重新上传'+ error,
+                type: 'warning',
+                showClose: true
+              })
+              file.onError()
             })
-            file.onSuccess()
-          }).catch(error=>{
-            this.$message({
-              message: '上传班级照失败，请重新上传'+ error,
-              type: 'warning',
-              showClose: true
+          }else {
+            reLoad(this.Secret,file.file,this.Class.BClass_photo).then(res =>{
+              this.$message({
+                message: '上传班级照成功',
+                type: 'success',
+                showClose: true
+              })
+              file.onSuccess()
+            }).catch(error=>{
+              this.$message({
+                message: '上传班级照失败，请重新上传'+ error,
+                type: 'warning',
+                showClose: true
+              })
+              file.onError()
             })
-            file.onError()
-          })
-        }else {
-          reLoad(this.Secret,file.file,this.Class.BClass_photo).then(res =>{
-            this.$message({
-              message: '上传班级照成功',
-              type: 'success',
-              showClose: true
-            })
-            file.onSuccess()
-          }).catch(error=>{
-            this.$message({
-              message: '上传班级照失败，请重新上传'+ error,
-              type: 'warning',
-              showClose: true
-            })
-            file.onError()
-          })
-        }
+          }
+        })
       })
     },
     ClassLoad(file){
       getAllFile().then(res =>{
         this.Secret = res.data
-      })
-      this.$confirm("是否上传课程表",'警告',{
-        confirmButtonText: '确定',
-        cancelButtonText: "取消",
-        type: 'warning',
-      }).then(() =>{
-        if(!this.Class.BCourseTable){
-          LEupload(this.Secret,file.file,"BanJi/").then(res=>{
-            this.Class.BCourseTable = res
-            this.$message({
-              message: '上传课程表成功',
-              type: 'success',
-              showClose: true
+      }).then(()=>{
+        this.$confirm("是否上传课程表",'警告',{
+          confirmButtonText: '确定',
+          cancelButtonText: "取消",
+          type: 'warning',
+        }).then(() =>{
+          if(!this.Class.BCourseTable){
+            LEupload(this.Secret,file.file,"BanJi/").then(res=>{
+              this.Class.BCourseTable = res
+              this.$message({
+                message: '上传课程表成功',
+                type: 'success',
+                showClose: true
+              })
+              file.onSuccess()
+            }).catch(error=>{
+              this.$message({
+                message: '上传课程表失败，请重新上传'+ error,
+                type: 'warning',
+                showClose: true
+              })
+              file.onError()
             })
-            file.onSuccess()
-          }).catch(error=>{
-            this.$message({
-              message: '上传课程表失败，请重新上传'+ error,
-              type: 'warning',
-              showClose: true
+          }else {
+            reLoad(this.Secret,file.file,this.Class.BCourseTable).then(res =>{
+              this.$message({
+                message: '上传课程表成功',
+                type: 'success',
+                showClose: true
+              })
+              file.onSuccess()
+            }).catch(error=>{
+              this.$message({
+                message: '上传课程表失败，请重新上传'+ error,
+                type: 'warning',
+                showClose: true
+              })
+              file.onError()
             })
-            file.onError()
-          })
-        }else {
-          reLoad(this.Secret,file.file,this.Class.BCourseTable).then(res =>{
-            this.$message({
-              message: '上传课程表成功',
-              type: 'success',
-              showClose: true
-            })
-            file.onSuccess()
-          }).catch(error=>{
-            this.$message({
-              message: '上传课程表失败，请重新上传'+ error,
-              type: 'warning',
-              showClose: true
-            })
-            file.onError()
-          })
-        }
+          }
+        })
       })
     },
     //关闭弹窗
@@ -568,13 +610,13 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        done()
         this.open = false
         this.ClassOpen = false
         this.$refs.BClass_photo.clearFiles()
         this.$refs.BCourseTable.clearFiles()
+        done()
       }).catch(() => {
-
+        console.log('错误')
       });
     },
     submitFile(){

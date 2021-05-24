@@ -119,6 +119,7 @@
             this.$store.dispatch('Login', this.loginForm).then(() => {
               this.loading = false;
               setCookie("username",this.loginForm.username,15);
+              this.$store.dispatch('GetInfo')
               this.$router.push({path: '/'})
             }).catch(() => {
               this.$message({

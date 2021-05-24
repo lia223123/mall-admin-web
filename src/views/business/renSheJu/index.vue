@@ -52,7 +52,7 @@
           <el-input v-model="form.RenSheJu_code" placeholder="请输入人社局编号" />
         </el-form-item>
         <el-form-item label="电话号码" prop="RenSheJu_tel">
-          <el-input v-model="form.RenSheJu_tel" placeholder="请输入电话号码" />
+          <el-input v-model="form.RenSheJu_tel" placeholder="请输入电话号码" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
         </el-form-item>
         <el-form-item label="人社局名称" prop="RenSheJu_name">
           <el-input v-model="form.RenSheJu_name" placeholder="请输入人社局名称" />

@@ -77,7 +77,9 @@
           <el-input v-model="form.BClass_address" placeholder="请输入开班地" />
         </el-form-item>
         <el-form-item label="开班部门" prop="BDepartment">
-          <el-input v-model="form.BDepartment" placeholder="请输入开班部门" />
+          <el-select v-model="form.BDepartment" placeholder="请选择开班部门">
+            <el-option v-for="item in dept" :key="item.name" :label="item.name" :value="item.name"/>
+          </el-select>
         </el-form-item>
         <el-form-item label="开课时间" prop="BCEndTime">
           <el-col :span="11">
@@ -198,7 +200,9 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="部门" prop="tp_part" label-width="50px">
-              <el-input v-model="Proform.tp_part" placeholder="请输入部门"/>
+              <el-select v-model="Proform.tp_part" placeholder="请选择部门">
+                <el-option v-for="item in dept" :key="item.name" :label="item.name" :value="item.name"/>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -208,14 +212,14 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="负责人电话" prop="tp_tPPhone" label-width="95px">
-              <el-input v-model="Proform.tp_tPPhone" placeholder="请输入负责人电话"/>
+              <el-input v-model="Proform.tp_tPPhone" placeholder="请输入负责人电话" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="8">
             <el-form-item label="单位联系电话" prop="tp_tCPhone" label-width="110px">
-              <el-input v-model="Proform.tp_tCPhone" placeholder="请输入联系电话" max-length="11"/>
+              <el-input v-model="Proform.tp_tCPhone" placeholder="请输入联系电话" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
             </el-form-item>
           </el-col>
           <el-col :span="16">
@@ -279,7 +283,8 @@ export default {
       //查询参数
       query:[
         {name:'项目编号',id: 'tp_projectCode'},
-        {name:'讲师姓名',id: 'tp_projectName'},
+        {name:'项目名称',id: 'tp_projectName'},
+        {name:'招标单位',id: 'tp_tenderCompany'},
       ],
       rules: {
         BClass_code:[
@@ -413,6 +418,14 @@ export default {
       tenderCompany: [
         {name: '人社局',id: 1},
         {name: '公共就业和人才服务中心',id: 2}
+      ],
+      //部门选择
+      dept: [
+        {name: '培训一部'},
+        {name: '培训二部'},
+        {name: '培训三部'},
+        {name: '培训四部'},
+        {name: '培训五部'},
       ],
     }
   },
@@ -615,7 +628,7 @@ export default {
       }else {
         let json = {}
         json[this.select] = this.find
-        listLecturers(json).then(res =>{
+        listTenderProject(json).then(res =>{
           this.dataList = res.data.results
         })
       }

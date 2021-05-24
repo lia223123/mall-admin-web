@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '../views/layout/Layout'
+import {buildMenu} from "../api/login";
 
 /**
  * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
@@ -94,123 +95,139 @@ export const constantRouterMap = [
       path: 'document',
       name: 'document',
       component: ()=>import('@/views/document/index'),
-      meta: {title: '公司资料', icon: 'home'}
+      meta: {title: '标书资料', icon: 'home'}
     }]
-  },
-  {
-    path: '/fileCom',
-    component: Layout,
-    redirect: '/fileCom',
-    children: [{
-      path: 'fileCompany',
-      name: 'fileCompany',
-      component: () => import('@/views/essential/fileCompany/index'),
-      meta: {title: '公司单位', icon: 'product'}
-    },]
-  },
-  // {
-  //   path: '',
-  //   component: Layout,
-  //   redirect: '/home',
-  //   children: [{
-  //     path: 'home',
-  //     name: 'home',
-  //     component: () => import('@/views/home/index'),
-  //     meta: {title: '首页', icon: 'home'}
-  //   }]
-  // },
-  {
-    path: '/essential',
-    component: Layout,
-    redirect: '/essential',
-    children: [
-      {
-        path: 'employee',
-        name: 'employee',
-        component: () => import('@/views/essential/employee/index'),
-        meta: {title: '员工信息', icon: 'ums-admin'}
-      },
-      {
-        path: 'lecturers',
-        name: 'lecturers',
-        component: () => import('@/views/essential/lecturers/index'),
-        meta: {title: '讲师信息', icon: 'ums-admin'}
-      },
-      {
-        path: 'adminssionsTeacher',
-        name: 'adminssionsTeacher',
-        component: () => import('@/views/essential/adminssionsTeacher/index'),
-        meta: {title: '招生老师信息', icon: 'ums-admin'}
-      },
-      {
-        path: 'company',
-        name: 'company',
-        component: () => import('@/views/essential/company/index'),
-        meta: {title: '学员单位名称', icon: 'ums-admin'}
-      },
-
-
-    ],
-    meta: {title: '人员信息', icon: 'ums-resource'}
-  },
-  {
-    path: '/business',
-    component: Layout,
-    redirect: '/business',
-    meta: {title: '业务处理', icon: 'product-attr'},
-    children: [
-      {
-        path: 'tenderProject',
-        name: 'tenderProject',
-        component: () => import('@/views/business/tenderProjects/index'),
-        meta: {title: '中标项目', icon: 'product-brand'}
-      },
-      {
-        path: 'banji',
-        name: 'banji',
-        component: () => import('@/views/business/banji/index'),
-        meta: {title: '班级信息', icon: 'product-list'}
-      },
-      {
-        path: 'stuInfo',
-        name: 'stuInfo',
-        component: () => import('@/views/business/stuInfo/index'),
-        meta: {title: '学员信息', icon: 'user'}
-      },
-      {
-        path: 'renSheJu',
-        name: 'renSheJu',
-        component: () => import('@/views/business/renSheJu/index'),
-        meta: {title: '人社局信息', icon: 'product-cate'}
-      },
-      {
-        path: 'trainBook',
-        name: 'trainBook',
-        component: () => import('@/views/business/trainBook/index'),
-        meta: {title: '证书信息', icon: 'sms-subject'}
-      },
-      {
-        path: 'Identify',
-        name: 'Identify',
-        component: () => import('@/views/business/Identify/index'),
-        meta: {title: '工种鉴定机构', icon: 'sms'}
-      },
-    ]
-  },
-  {
-    path: '/Finance',
-    component: Layout,
-    redirect: '/Finance',
-    meta: {title: '财务处理', icon: 'sms-ad'},
-    children: [
-      {
-        path: 'Finance',
-        name: 'Finance',
-        component: () => import('@/views/finance/Exhibition/index'),
-        meta: {title: '财务处理', icon: 'ums-admin'}
-      }
-    ]
   }
+  // {
+  //   path: '/fileCom',
+  //   component: Layout,
+  //   redirect: '/fileCom',
+  //   children: [{
+  //     path: 'fileCompany',
+  //     name: 'fileCompany',
+  //     component: () => import('@/views/essential/fileCompany/index'),
+  //     meta: {title: '公司单位', icon: 'product'}
+  //   },]
+  // },
+  // // {
+  // //   path: '',
+  // //   component: Layout,
+  // //   redirect: '/home',
+  // //   children: [{
+  // //     path: 'home',
+  // //     name: 'home',
+  // //     component: () => import('@/views/home/index'),
+  // //     meta: {title: '首页', icon: 'home'}
+  // //   }]
+  // // },
+  // { path: '/sys',
+  //   component: Layout,
+  //   redirect: '/sys',
+  //   meta: {title: '系统功能', icon: 'sms-ad'},
+  //   children: [
+  //     {
+  //       path: 'employee',
+  //       name: 'employee',
+  //       component: () => import('@/views/essential/employee/index'),
+  //       meta: {title: '员工信息', icon: 'ums-admin'}
+  //     },
+  //     {
+  //       path: 'roles',
+  //       name: 'roles',
+  //       component: () => import('@/views/sys/roles/index'),
+  //       meta: {title: '角色信息', icon: 'user'}
+  //     },
+  //     {
+  //       path: 'Menu',
+  //       name: 'Menu',
+  //       component: () => import('@/views/sys/menu/index'),
+  //       meta: {title: '菜单信息', icon: 'ums-admin'}
+  //     },
+  //   ]},
+  // {
+  //   path: '/essential',
+  //   component: Layout,
+  //   redirect: '/essential',
+  //   children: [
+  //     {
+  //       path: 'lecturers',
+  //       name: 'lecturers',
+  //       component: () => import('@/views/essential/lecturers/index'),
+  //       meta: {title: '讲师信息', icon: 'ums-admin'}
+  //     },
+  //     {
+  //       path: 'adminssionsTeacher',
+  //       name: 'adminssionsTeacher',
+  //       component: () => import('@/views/essential/adminssionsTeacher/index'),
+  //       meta: {title: '招生老师信息', icon: 'ums-admin'}
+  //     },
+  //     {
+  //       path: 'company',
+  //       name: 'company',
+  //       component: () => import('@/views/essential/company/index'),
+  //       meta: {title: '学员单位名称', icon: 'ums-admin'}
+  //     },
+  //     {
+  //       path: 'renSheJu',
+  //       name: 'renSheJu',
+  //       component: () => import('@/views/business/renSheJu/index'),
+  //       meta: {title: '人社局信息', icon: 'product-cate'}
+  //     },
+  //     {
+  //       path: 'Identify',
+  //       name: 'Identify',
+  //       component: () => import('@/views/business/Identify/index'),
+  //       meta: {title: '工种鉴定机构', icon: 'sms'}
+  //     },
+  //   ],
+  //   meta: {title: '基础信息', icon: 'ums-resource'}
+  // },
+  // {
+  //   path: '/business',
+  //   component: Layout,
+  //   redirect: '/business',
+  //   meta: {title: '业务处理', icon: 'product-attr'},
+  //   children: [
+  //     {
+  //       path: 'tenderProject',
+  //       name: 'tenderProject',
+  //       component: () => import('@/views/business/tenderProjects/index'),
+  //       meta: {title: '中标项目', icon: 'product-brand'}
+  //     },
+  //     {
+  //       path: 'banji',
+  //       name: 'banji',
+  //       component: () => import('@/views/business/banji/index'),
+  //       meta: {title: '班级信息', icon: 'product-list'}
+  //     },
+  //   ]
+  // },
+  // {
+  //   path: '/Finance',
+  //   component: Layout,
+  //   redirect: '/Finance',
+  //   meta: {title: '查询', icon: 'sms-ad'},
+  //   children: [
+  //     {
+  //       path: 'Finance',
+  //       name: 'Finance',
+  //       component: () => import('@/views/finance/Exhibition/index'),
+  //       meta: {title: '财务信息', icon: 'ums-admin'}
+  //     },
+  //     {
+  //       path: 'stuInfo',
+  //       name: 'stuInfo',
+  //       component: () => import('@/views/business/stuInfo/index'),
+  //       meta: {title: '学员信息', icon: 'user'}
+  //     },
+  //     {
+  //       path: 'trainBook',
+  //       name: 'trainBook',
+  //       component: () => import('@/views/business/trainBook/index'),
+  //       meta: {title: '证书信息', icon: 'sms-subject'}
+  //     },
+  //   ]
+  // }
 ]
 
 export const asyncRouterMap = [

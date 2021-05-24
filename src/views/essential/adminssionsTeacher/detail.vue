@@ -56,7 +56,7 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="()=>{this.updateOpen = true}" type="warning">招生老师图片资料修改</el-button>
+                  <el-button @click="()=>{this.updateOpen = true}" type="warning">招生老师图片资料上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button @click="DidCard" type="primary">身份证正面资料下载</el-button>
@@ -74,7 +74,7 @@
                   <el-input v-model="user.ADid" placeholder="请输入招生老师编号"  :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="身份证" prop="AD_cid" >
-                  <el-input v-model="user.AD_cid" placeholder="请输入身份证" :disabled="isDes"/>
+                  <el-input v-model="user.AD_cid" placeholder="请输入身份证" :disabled="isDes" maxlength="18"/>
                 </el-form-item>
                 <el-form-item label="招生老师姓名" prop="AD_name">
                   <el-input v-model="user.AD_name" placeholder="请输入招生老师姓名" :disabled="isDes"/>
@@ -95,7 +95,7 @@
                   <el-input v-model="user.AD_bankName" placeholder="请输入银行开户行" :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="银行卡号" prop="AD_bankCode">
-                  <el-input v-model="user.AD_bankCode" placeholder="请输入银行卡号" :disabled="isDes"/>
+                  <el-input v-model="user.AD_bankCode" placeholder="请输入银行卡号" :disabled="isDes" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
@@ -192,21 +192,22 @@ export default {
     },
     //下载文件
     DidCard(){
-      getAllFile().then(res =>{
-        this.Secret = res.data
-      })
-      this.$confirm('是否下载招生老师编号为' + this.user.ADid + "的招生老师身份证正面？","警告", {
+      this.$confirm('是否下载招生老师编号为' + this.user.ADid + "的招生老师身份证？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        DownLoadCos(this.Secret,this.user.AD_idCard01).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(err=>{
-          Message.warning({
-            message: '改员工未上传身份证' + err,
-            showClose: true
+      getAllFile().then(res =>{
+        this.Secret = res.data
+      }).then(()=>{
+          DownLoadCos(this.Secret,this.user.AD_idCard01).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(err=>{
+            Message.warning({
+              message: '改员工未上传身份证' + err,
+              showClose: true
+            })
           })
         })
       })
@@ -219,14 +220,15 @@ export default {
       }).then(() =>{
         getAllFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.AD_contents).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(err =>{
-          Message.warning({
-            message: '该员工未上传身份证'+err,
-            showClose: true
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.AD_contents).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(err =>{
+            Message.warning({
+              message: '该员工未上传身份证'+err,
+              showClose: true
+            })
           })
         })
       })
@@ -242,8 +244,8 @@ export default {
         });
         this.isDes = true
         this.updateOpen = false
-        this.$refs.AD_idCard01.clearFiles()
-        this.$refs.AD_contents.clearFiles()
+        // this.$refs.AD_idCard01.clearFiles()
+        // this.$refs.AD_contents.clearFiles()
         this.getUser(this.id)
       }).catch(error =>{
         this.$message({
@@ -349,10 +351,10 @@ export default {
         this.$refs.AD_idCard01.submit()
         this.$refs.AD_contents.submit()
       }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: ''
-        // });
+        this.$message({
+          type: 'info',
+          message: '上传失败'
+        });
       });
     },
     cancel(){

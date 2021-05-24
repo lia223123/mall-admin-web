@@ -63,7 +63,6 @@ export default {
       //查询参数
       query:[
         {name:'班级名',id: 'sc_bName'},
-        {name:'耗材费',id: 'sc_hc'},
         {name:'开班时间',id: 'sc_date'},
         {name:'部门',id: 'sc_part'},
       ],
@@ -148,7 +147,7 @@ export default {
       }else {
         let json = {}
         json[this.select] = this.find
-        listEmployee(json).then(res =>{
+        listSeCount(json).then(res =>{
           this.dataList = res.data.results
         })
       }

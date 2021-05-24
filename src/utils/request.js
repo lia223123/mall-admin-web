@@ -15,7 +15,7 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(config => {
   if (store.getters.token) {
-    config.headers['Authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
   }
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
@@ -49,20 +49,21 @@ service.interceptors.request.use(config => {
 
 // respone拦截器
 // service.interceptors.response.use(
-  // response => {
+//   response => {
 //   /**
 //   * code为非200是抛错 可结合自己业务进行修改
 //   */
-//     const res = response.data
-//     if (res.code !== 200) {
+//     const res = response
+//     console.log(res)
+//     if (res.status !== 200) {
 //       Message({
-//         message: res.message,
+//         message: res.data.message,
 //         type: 'error',
-//         duration: 3 * 1000
+//         duration: 2 * 1000
 //       })
 //
 //       // 401:未登录;
-//       if (res.code === 401) {
+//       if (res.status === 401) {
 //         MessageBox.confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
 //           confirmButtonText: '重新登录',
 //           cancelButtonText: '取消',

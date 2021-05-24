@@ -44,11 +44,11 @@
             @click="buttonClick(scope.row)"
             :disabled="scope.row.B_type === 3"
           >学员信息导入</el-button><br>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-wallet"
-          >学员信息导出</el-button>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-wallet"-->
+<!--          >学员信息导出</el-button>-->
         </template>
       </el-table-column>
       <el-table-column label="财务登记">
@@ -205,12 +205,12 @@
               </el-col>
               <el-col :span="8">
                 <el-form-item label="电话">
-                  <el-input placeholder="请输入电话" v-model="domain.em_phone" max-length="11"/>
+                  <el-input placeholder="请输入电话" v-model="domain.em_phone" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="身份证">
-                  <el-input placeholder="请输入身份证" v-model="domain.em_cid"/>
+                  <el-input placeholder="请输入身份证" v-model="domain.em_cid" maxlength="18"/>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -242,7 +242,7 @@
               </el-col>
               <el-col :span="8">
                 <el-form-item label="银行卡号" label-width="80px">
-                  <el-input placeholder="请输入银行卡号" v-model="domain.em_bankCode"/>
+                  <el-input placeholder="请输入银行卡号" v-model="domain.em_bankCode" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
@@ -271,12 +271,12 @@
             </el-col>
             <el-col :span="8">
               <el-form-item label="电话">
-                <el-input placeholder="请输入电话" v-model="domain.te_phone" max-length="11"/>
+                <el-input placeholder="请输入电话" v-model="domain.te_phone" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="身份证">
-                <el-input placeholder="请输入身份证" v-model="domain.te_cid"/>
+                <el-input placeholder="请输入身份证" v-model="domain.te_cid" maxlength="18"/>
               </el-form-item>
             </el-col>
           </el-row>
@@ -288,7 +288,7 @@
             </el-col>
             <el-col :span="7">
               <el-form-item label="银行卡号" label-width="80px">
-                <el-input placeholder="请输入银行卡号" v-model="domain.te_bankCode"/>
+                <el-input placeholder="请输入银行卡号" v-model="domain.te_bankCode" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -325,12 +325,12 @@
             </el-col>
             <el-col :span="8">
               <el-form-item label="电话">
-                <el-input placeholder="请输入电话" v-model="domain.ad_phone" max-length="11"/>
+                <el-input placeholder="请输入电话" v-model="domain.ad_phone" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="身份证">
-                <el-input placeholder="请输入身份证" v-model="domain.ad_cid"/>
+                <el-input placeholder="请输入身份证" v-model="domain.ad_cid" maxlength="18"/>
               </el-form-item>
             </el-col>
           </el-row>
@@ -342,7 +342,7 @@
             </el-col>
             <el-col :span="7">
               <el-form-item label="银行卡号" label-width="80px">
-                <el-input placeholder="请输入银行卡号" v-model="domain.ad_bankCode"/>
+                <el-input placeholder="请输入银行卡号" v-model="domain.ad_bankCode" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -432,7 +432,13 @@ export default {
       //查询参数
       query:[
         {name:'班级编号',id: 'BClass_code'},
-        {name:'讲师姓名',id: 'BClass_name'},
+        {name:'班级名称',id: 'BClass_name'},
+        {name:'人社局编号',id: 'BR_code'},
+        {name:'开班地址',id: 'BClass_address'},
+        {name:'开班部门',id: 'BDepartment'},
+        {name:'班主任',id: 'BHead_teacher'},
+        {name:'讲课老师',id: 'BLecturer'},
+        {name:'班级状态',id: 'B_type'},
       ],
       Secret: {},
       BType: [
@@ -766,7 +772,7 @@ export default {
       }else {
         let json = {}
         json[this.select] = this.find
-        listLecturers(json).then(res =>{
+        listBanJi(json).then(res =>{
           this.dataList = res.data.results
         })
       }
@@ -962,8 +968,7 @@ export default {
             item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
             item.STU_filed_account = FisNot(item.STU_filed_account)
           }
-          item.STUBJ = []
-          item.STUBJ.push(this.banji_id)
+          item.STUBj = [this.banji_id]
           if(item.AD_cid !== "") {
             let o = {
               AD_cid: item.AD_cid
@@ -974,12 +979,19 @@ export default {
                   message: item.AD_name + "未在系统录入，请录入后再导入学员信息",
                   showClose: true
                 })
-                item.StuAD = ''
+                item.StuAD = []
                 that.ad_status = 1
               } else {
-                item.StuAD = res.data.results[0].id
+                item.StuAD = [res.data.results[0].id]
               }
+            }).then(()=>{
+              delete item.AD_cid
+              delete item.AD_name
             })
+          }else {
+            item.StuAD = []
+            delete item.AD_cid
+            delete item.AD_name
           }
         })
         //可能修改
@@ -994,6 +1006,7 @@ export default {
                 showClose: true
               })
             }).catch(err=>{
+              console.log(err)
               Message.error({
                 message: err,
                 showClose: true
@@ -1012,7 +1025,6 @@ export default {
       })
 
     },
-
     //财务模块
     handleDJ(value){
       this.banji_id = value.id
@@ -1035,8 +1047,9 @@ export default {
           })
           this.FYOpen = false
         }).catch(err=>{
+          console.log(err)
           Message.error({
-            message: err,
+            message: '请输入正确的信息',
             showClose: true
           })
         })
@@ -1093,7 +1106,6 @@ export default {
     CwYHSubmit(){
       this.YHform.detail.forEach(item =>{
         item.em_pay = parseFloat(item.em_jbCost) + parseFloat(item.em_cxCost) + parseFloat(item.em_dbCost)
-        console.log(item)
         addEmDetails(item).then(res=>{
           Message.success({
             message: '员工费用增加成功',
@@ -1101,8 +1113,9 @@ export default {
           })
           this.YHOpen = false
         }).catch(err=>{
+          console.log(err)
           Message.error({
-            message: err,
+            message: '请输入正确的信息',
             showClose: true
           })
         })
@@ -1141,8 +1154,9 @@ export default {
           })
           this.JSOpen = false
         }).catch(err=>{
+          console.log(err)
           Message.error({
-            message: err,
+            message: '请输入正确的信息',
             showClose: true
           })
         })
@@ -1181,98 +1195,99 @@ export default {
           })
           this.KBOpen = false
         }).catch(err=>{
-          Message.error(err)
+          console.log(err)
+          Message.error('请输入正确的信息')
         })
       })
     },
     //获取财务数据
     handledetail(row){
-      this.getCWData(row.id)
+      let o = {
+        te_s: row.id,
+        ad_s: row.id,
+        em_s: row.id,
+        se_bj: row.id,
+      }
       const loading = this.$loading({
         lock: true,
         text: '正在生成财务模板，请稍后',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       });
-      setTimeout(function () {
-        that.exportWord()
-        that.CwOpen = true
-        that.data.costCount = parseFloat(that.settle.consumables) +
-          parseFloat(that.settle.material) + parseFloat(that.settle.field) +
-          parseFloat(that.settle.conference) + parseFloat(that.settle.appraisal) +
-          parseFloat(that.settle.reception) + parseFloat(that.settle.traffic) +
-          parseFloat(that.settle.automobile) + parseFloat(that.settle.lodging) +
-          parseFloat(that.settle.life) + parseFloat(that.data.adCost) +
-          parseFloat(that.data.teCost) + parseFloat(that.data.empCount);
-        loading.close()
-      },2000)
-    },
-    getCWData(id){
-      getBanJi(id).then(res =>{
+      getBanJi(row.id).then(res =>{
         this.banji = res.data
-      })
-      let o = {
-        te_s: id,
-        ad_s: id,
-        em_s: id,
-        se_bj: id,
-      }
-      listSubsidyPayment(o).then(res =>{
-        if(res.data.results.length < 1){
-          return
-        }
-        this.terd = res.data.results
-        res.data.results.forEach(item =>{
-          this.data.teCost += parseFloat(item.te_pay)
-        })
-      })
-      listEmDetails(o).then(res =>{
-        if(res.data.results.length < 1 ){
-          return
-        }
-        this.emp = res.data.results
-        res.data.results.forEach(item =>{
-          this.data.shift += parseFloat(item.em_dbCost)
-          this.data.overtime += parseFloat(item.em_jbCost)
-          this.data.travel += parseFloat(item.em_cxCost)
-          this.data.empCount += parseFloat(item.em_pay)
-        })
-      })
-      listSettleAccounts(o).then(res =>{
-        if(res.data.results.length < 1){
-          return
-        }
-        res.data.results.forEach(item =>{
-          if(item.se_types === 1){
-            this.settle.consumables += parseFloat(item.se_pay)
-          }else if(item.se_types === 2){
-            this.settle.material += parseFloat(item.se_pay)
-          }else if(item.se_types === 3){
-            this.settle.field += parseFloat(item.se_pay)
-          }else if(item.se_types === 4){
-            this.settle.conference += parseFloat(item.se_pay)
-          }else if(item.se_types === 5){
-            this.settle.appraisal += parseFloat(item.se_pay)
-          }else if(item.se_types === 6){
-            this.settle.reception += parseFloat(item.se_pay)
-          }else if(item.se_types === 7){
-            this.settle.traffic += parseFloat(item.se_pay)
-          }else if(item.se_types === 8){
-            this.settle.automobile += parseFloat(item.se_pay)
-          }else if(item.se_types === 9){
-            this.settle.lodging += parseFloat(item.se_pay)
-          }else if(item.se_types === 10){
-            this.settle.life += parseFloat(item.se_pay)
+      }).then(()=>{
+        listSubsidyPayment(o).then(res =>{
+          if(res.data.results.length < 1){
+            return
           }
-        })
-      })
-      listPayDetails(o).then(res =>{
-        if(res.data.results.length < 1){
-          return
-        }
-        this.adrd = res.data.results
-        res.data.results.forEach(item =>{
-          this.data.adCost += parseFloat(item.ad_pay)
+          this.terd = res.data.results
+          res.data.results.forEach(item =>{
+            this.data.teCost += parseFloat(item.te_pay)
+          })
+        }).then(()=>{
+          listEmDetails(o).then(res =>{
+            if(res.data.results.length < 1 ){
+              return
+            }
+            this.emp = res.data.results
+            res.data.results.forEach(item =>{
+              this.data.shift += parseFloat(item.em_dbCost)
+              this.data.overtime += parseFloat(item.em_jbCost)
+              this.data.travel += parseFloat(item.em_cxCost)
+              this.data.empCount += parseFloat(item.em_pay)
+            })
+          }).then(()=>{
+            listSettleAccounts(o).then(res =>{
+              if(res.data.results.length < 1){
+                return
+              }
+              res.data.results.forEach(item =>{
+                if(item.se_types === 1){
+                  this.settle.consumables += parseFloat(item.se_pay)
+                }else if(item.se_types === 2){
+                  this.settle.material += parseFloat(item.se_pay)
+                }else if(item.se_types === 3){
+                  this.settle.field += parseFloat(item.se_pay)
+                }else if(item.se_types === 4){
+                  this.settle.conference += parseFloat(item.se_pay)
+                }else if(item.se_types === 5){
+                  this.settle.appraisal += parseFloat(item.se_pay)
+                }else if(item.se_types === 6){
+                  this.settle.reception += parseFloat(item.se_pay)
+                }else if(item.se_types === 7){
+                  this.settle.traffic += parseFloat(item.se_pay)
+                }else if(item.se_types === 8){
+                  this.settle.automobile += parseFloat(item.se_pay)
+                }else if(item.se_types === 9){
+                  this.settle.lodging += parseFloat(item.se_pay)
+                }else if(item.se_types === 10){
+                  this.settle.life += parseFloat(item.se_pay)
+                }
+              })
+            }).then(()=>{
+              listPayDetails(o).then(res =>{
+                if(res.data.results.length < 1){
+                  return
+                }
+                this.adrd = res.data.results
+                res.data.results.forEach(item =>{
+                  this.data.adCost += parseFloat(item.ad_pay)
+                })
+              }).then(()=>{
+                that.exportWord()
+                that.CwOpen = true
+                that.data.costCount = parseFloat(that.settle.consumables) +
+                  parseFloat(that.settle.material) + parseFloat(that.settle.field) +
+                  parseFloat(that.settle.conference) + parseFloat(that.settle.appraisal) +
+                  parseFloat(that.settle.reception) + parseFloat(that.settle.traffic) +
+                  parseFloat(that.settle.automobile) + parseFloat(that.settle.lodging) +
+                  parseFloat(that.settle.life) + parseFloat(that.data.adCost) +
+                  parseFloat(that.data.teCost) + parseFloat(that.data.empCount);
+                loading.close()
+              })
+            })
+          })
         })
       })
     },

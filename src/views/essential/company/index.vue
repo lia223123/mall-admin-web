@@ -52,7 +52,7 @@
           <el-input v-model="form.Comp_code" placeholder="请输入公司编号" />
         </el-form-item>
         <el-form-item label="公司电话" prop="Comp_tel">
-          <el-input v-model="form.Comp_tel" placeholder="请输入公司电话" />
+          <el-input v-model="form.Comp_tel" placeholder="请输入公司电话" onkeyup="value=value.replace(/[^\d]/g,'')"/>
         </el-form-item>
         <el-form-item label="公司名称" prop="Comp_name">
           <el-input v-model="form.Comp_name" placeholder="请输入公司名称" />
@@ -95,10 +95,7 @@ export default {
       form: {},
       //查询参数
       query:[
-        {name:'公司编号',id: 'Comp_code'},
         {name:'公司名称',id: 'Comp_name'},
-        {name:'公司电话',id: 'Comp_tel'},
-        {name:'公司联系人',id: 'Comp_ty_code'},
       ],
       rules: {
         Comp_code:[

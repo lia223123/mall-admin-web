@@ -152,13 +152,13 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="招生老师" prop="STU_Teacher" label-width="80px">
-              <el-select v-model="form.STU_Teacher" filterable placeholder="请选择招生老师">
-                <el-option v-for="item in Teacher" :label="item.AD_name+item.ADid" :value="item.ADid" :key="item.id"/>
-              </el-select>
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="6">-->
+<!--            <el-form-item label="招生老师" prop="STU_Teacher" label-width="80px">-->
+<!--              <el-select v-model="form.STU_Teacher" filterable placeholder="请选择招生老师">-->
+<!--                <el-option v-for="item in Teacher" :label="item.AD_name+item.ADid" :value="item.ADid" :key="item.id"/>-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
         </el-row>
         <el-row>
           <el-col :span="6">
@@ -300,11 +300,12 @@ export default {
       dialogImageUrl: '',
       //查询参数
       query:[
-        {name:'学员编号',id: 'LEid'},
         {name:'学员姓名',id: 'STU_name'},
-        {name:'身份证',id: 'STU_nation'},
-        {name:'银行开户行',id: 'STU_education'},
-        {name:'专业',id: 'STU_major'},
+        {name:'身份证',id: 'STU_sf_id'},
+        {name:'详细住址',id: 'STU_detail_address'},
+        {name:'现居住址',id: 'STU_current_address'},
+        // {name:'民族',id: 'STU_nation'},
+        // {name:'专业',id: 'STU_major'},
       ],
       rules: {
         STU_sf_id:[

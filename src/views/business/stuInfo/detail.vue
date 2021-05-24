@@ -396,21 +396,22 @@ export default {
     },
     //下载文件
     DidCard(){
-      getAllFile().then(res =>{
-        this.Secret = res.data
-      })
       this.$confirm('是否下载学员身份证为' + this.user.STU_sf_id + "的学员身份证正面？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
       }).then(() =>{
-        DownLoadCos(this.Secret,this.user.STU_photoIdz).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=>{
-          Message.warning({
-            message: '身份证正面未上传',
-            showClose: true
+          getAllFile().then(res =>{
+          this.Secret = res.data
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.STU_photoIdz).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=>{
+            Message.warning({
+              message: '身份证正面未上传',
+              showClose: true
+            })
           })
         })
       })
@@ -423,14 +424,15 @@ export default {
       }).then(() =>{
         getAllFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.STU_photoIdf).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=>{
-          Message.warning({
-            message: '身份证反面未上传',
-            showClose: true
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.STU_photoIdf).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=>{
+            Message.warning({
+              message: '身份证反面未上传',
+              showClose: true
+            })
           })
         })
       })
@@ -443,14 +445,15 @@ export default {
       }).then(() =>{
         getAllFile().then(res =>{
           this.Secret = res.data
-        })
-        DownLoadCos(this.Secret,this.user.STU_photo).then(res=>{
-            window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
-          }
-        ).catch(()=>{
-          Message.warning({
-            message: '学生图片未上传',
-            showClose: true
+        }).then(()=>{
+          DownLoadCos(this.Secret,this.user.STU_photo).then(res=>{
+              window.open(res, '_blank', 'fullscreen=no,width=500,height=500')
+            }
+          ).catch(()=>{
+            Message.warning({
+              message: '学生图片未上传',
+              showClose: true
+            })
           })
         })
       })

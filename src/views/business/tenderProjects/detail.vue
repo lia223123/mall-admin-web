@@ -65,8 +65,10 @@
             <el-tab-pane label="中标项目基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
+                  <el-button @click="()=>{ this.open = true}" type="warning">标书上传</el-button>
+                </el-form-item>
+                <el-form-item>
                   <el-button @click="DidCard" type="primary">标书下载</el-button>
-                  <el-button @click="()=>{ this.open = true}" type="primary">标书上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -112,7 +114,9 @@
                   <el-input v-model="Class.tp_tCompany" placeholder="请输入中标单位" :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="部门" prop="tp_part">
-                  <el-input v-model="Class.tp_part" placeholder="请输入部门" :disabled="isDes"/>
+                  <el-select v-model="Class.tp_part" placeholder="请输入部门" :disabled="isDes">
+                    <el-option v-for="item in dept" :key="item.name" :label="item.name" :value="item.name"/>
+                  </el-select>
                 </el-form-item>
                 <el-form-item label="负责人" prop="tp_tPerson">
                   <el-input v-model="Class.tp_tPerson" placeholder="请输入负责人" :disabled="isDes">
@@ -123,7 +127,7 @@
                   </el-input>
                 </el-form-item>
                 <el-form-item label="单位联系电话" prop="tp_tCPhone">
-                  <el-input v-model="Class.tp_tCPhone" placeholder="请输入单位联系电话" :disabled="isDes"/>
+                  <el-input v-model="Class.tp_tCPhone" placeholder="请输入单位联系电话" :disabled="isDes" onkeyup="value=value.replace(/[^\d]/g,'')"/>
                 </el-form-item>
                 <el-form-item label="单位联系地址" prop="tp_address">
                   <el-input v-model="Class.tp_address" placeholder="请输入联系地址" :disabled="isDes"/>
@@ -205,7 +209,15 @@ export default {
       tenderCompany: [
         {name: '人社局',id: 1},
         {name: '公共就业和人才服务中心',id: 2}
-      ]
+      ],
+      //部门选择
+      dept: [
+        {name: '培训一部'},
+        {name: '培训二部'},
+        {name: '培训三部'},
+        {name: '培训四部'},
+        {name: '培训五部'},
+      ],
     }
   },
   created() {
