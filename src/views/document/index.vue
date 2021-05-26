@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div style="margin: 25px 5px">
-      <el-button type="primary" round @click="()=>{this.upOpen = true}">上传文件</el-button>
+      <el-button type="primary" round @click="()=>{this.upOpen = true}" v-if="hasAuth('upload')">上传文件</el-button>
       <el-select placeholder="请选择查询的公司"  @change="handleChange" v-model="ooo" filterable clearable>
         <el-option v-for="item in fileCompany" :key="item.id" :label="item.Com_name" :value="item.Com_url"/>
       </el-select>
@@ -26,8 +26,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -51,8 +58,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -76,8 +90,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -100,8 +121,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -129,11 +157,13 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
                       >下载</el-button><br>
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('upload')"
                         @click="deleteFile(scope.row)"
                       >删除</el-button>
                     </template>
@@ -159,8 +189,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -184,8 +221,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -208,8 +252,15 @@
                       <el-button
                         size="mini"
                         type="text"
+                        v-if="hasAuth('download')"
                         @click="DownLoad(scope.row)"
-                      >下载</el-button>
+                      >下载</el-button><br>
+                      <el-button
+                        size="mini"
+                        type="text"
+                        v-if="hasAuth('upload')"
+                        @click="deleteFile(scope.row)"
+                      >删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -325,6 +376,7 @@ export default {
   },
   created(){
     this.getList()
+    console.log(this.$store.state)
     listFileCompany().then(res =>{
       this.fileCompany = res.data.results
     }).catch(err=>{
@@ -515,6 +567,15 @@ export default {
         getAllFile().then(res=>{
           DeleteCos(res.data,row.Key).then(()=>{
             Message.success('删除成功')
+            let data = {
+              file_type: row.Key,
+              file_name: row.Key,
+              file_uptime: parseTime(Date.now()),
+              file_person: getCookie('username'),
+              file_url: row.Key,
+              file_status: 3
+            }
+            addFileManage(data)
           }).catch(err =>{
             Message.error(err + '删除失败')
           })

@@ -66,7 +66,6 @@ export default {
         {name:'开班时间',id: 'sc_date'},
         {name:'部门',id: 'sc_part'},
       ],
-
     }
   },
   created() {
@@ -74,9 +73,21 @@ export default {
   },
   methods:{
     getList(){
-      listSeCount().then(response =>{
+      let o = {}
+      if(this.$store.state.user.department === '财务'){
+        o = {}
+      }else {
+        o['sc_part'] = this.$store.state.user.department
+      }
+      listSeCount(o).then(response =>{
         this.dataList = response.data.results
         this.loading = false
+      }).catch(err=>{
+        this.$notify({
+          title: '错误',
+          message: '没有查询财务权限',
+          type: 'error'
+        });
       })
     },
     //重置菜单
@@ -102,26 +113,26 @@ export default {
       this.getList()
     },
     //删除数据
-    handleDelete(row){
-      this.$confirm('是否删除班级名为' + row.sc_bName + "的员工信息？","警告", {
-        confirmButtonText: '确定',
-        cancelButtonText: "取消",
-        type: 'warning',
-      }).then(() =>{
-        deleteEmployee(row.id).then(res =>{
-          this.$message({
-            message: "删除成功",
-            type: 'success',
-          });
-          this.getList();
-        });
-      }).catch(() =>{
-        this.$message({
-          message: "已取消删除",
-          type: 'warning',
-        });
-      })
-    },
+    // handleDelete(row){
+    //   this.$confirm('是否删除班级名为' + row.sc_bName + "的员工信息？","警告", {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: "取消",
+    //     type: 'warning',
+    //   }).then(() =>{
+    //     deleteEmployee(row.id).then(res =>{
+    //       this.$message({
+    //         message: "删除成功",
+    //         type: 'success',
+    //       });
+    //       this.getList();
+    //     });
+    //   }).catch(() =>{
+    //     this.$message({
+    //       message: "已取消删除",
+    //       type: 'warning',
+    //     });
+    //   })
+    // },
     //取消按钮
     cancel(){
       this.reset()
@@ -146,6 +157,7 @@ export default {
         })
       }else {
         let json = {}
+        json['sc_part'] = this.$store.state.user.department
         json[this.select] = this.find
         listSeCount(json).then(res =>{
           this.dataList = res.data.results

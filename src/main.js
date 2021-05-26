@@ -17,6 +17,8 @@ import store from './store'
 import '@/icons' // icon
 import '@/permission' // permission control
 
+import global from './globalFun'
+
 Vue.use(ElementUI, { locale })
 Vue.use(VCharts)
 

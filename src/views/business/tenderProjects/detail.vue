@@ -52,6 +52,10 @@
                 中标金额
                 <div class="pull-right">{{ Class.tp_tenderAmount }} 元</div>
               </li>
+              <li class="list-group-item">
+                项目状态
+                <div class="pull-right">{{ Class.tp_status | _status }}</div>
+              </li>
             </ul>
           </div>
         </el-card>
@@ -65,7 +69,7 @@
             <el-tab-pane label="中标项目基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="()=>{ this.open = true}" type="warning">标书上传</el-button>
+                  <el-button @click="()=>{ this.open = true}" type="warning" v-if="hasAuth('tender_edit')">标书上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button @click="DidCard" type="primary">标书下载</el-button>
@@ -136,9 +140,14 @@
                   <el-input v-model="Class.tp_tenderAmount" placeholder="请输入中标金额" :disabled="isDes">
                   </el-input>
                 </el-form-item>
+                <el-form-item label="项目状态" prop="tp_tenderAmount">
+                  <el-select v-model="Class.tp_status" placeholder="请选择项目状态" :disabled="isDes">
+                    <el-option v-for="item in status" :label="item.name" :value="item.value" :key="item.value"/>
+                  </el-select>
+                </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
-                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes">保存</el-button>
+                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes" v-if="hasAuth('tender_edit')">修改</el-button>
+                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes" v-if="hasAuth('tender_edit')">保存</el-button>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>
@@ -218,6 +227,10 @@ export default {
         {name: '培训四部'},
         {name: '培训五部'},
       ],
+      status: [
+        {name: '中标', value: 1},
+        {name: '投标', value: 2}
+      ]
     }
   },
   created() {
@@ -347,6 +360,11 @@ export default {
   filters: {
     tenderCom(num){
       return tenderCompany(num)
+    },
+    _status(row){
+      if(row === 1){
+        return '中标'
+      }else return '投标'
     }
   }
 }

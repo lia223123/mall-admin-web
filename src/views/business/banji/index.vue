@@ -33,7 +33,7 @@
 <!--      <el-table-column label="证书等级" align="center" prop="BLev" :formatter="_BLev"/>-->
       <el-table-column label="班级性质" align="center" prop="BClass_type" :formatter="_BClass_type"/>
       <el-table-column label="是否申请费用" align="center" prop="Bis_fee_applied" :formatter="_Bis_fee_applied"/>
-      <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_fee_applied"/>
+      <el-table-column label="是否结算" align="center" prop="Bis_closed" :formatter="_Bis_Bis_closed"/>
       <el-table-column label="班级状态" align="center" prop="B_type" :formatter="_classStatus" />
       <el-table-column label="学员导入导出" align="center" width="140px">
         <template slot-scope="scope">
@@ -59,6 +59,7 @@
             icon="el-icon-wallet"
             @click="handleDJ(scope.row)"
             :disabled="scope.row.B_type === 3"
+            v-if="hasAuth('settle_create')"
           >基本费用登记
           </el-button><br>
           <el-button
@@ -67,6 +68,7 @@
             icon="el-icon-wallet"
             @click="handleYHDJ(scope.row)"
             :disabled="scope.row.B_type === 3"
+            v-if="hasAuth('EmDetails_create')"
           >员工费用登记
           </el-button><br>
           <el-button
@@ -75,6 +77,7 @@
             icon="el-icon-wallet"
             @click="handleJSDJ(scope.row)"
             :disabled="scope.row.B_type === 3"
+            v-if="hasAuth('sub_create')"
           >教师费用登记
           </el-button><br>
           <el-button
@@ -83,6 +86,7 @@
             icon="el-icon-wallet"
             @click="handleKBDJ(scope.row)"
             :disabled="scope.row.B_type === 3"
+            v-if="hasAuth('sub_create')"
           >开班费用登记
           </el-button><br>
 
@@ -104,13 +108,14 @@
           <!--          >招生明细</el-button>-->
         </template>
       </el-table-column>
-      <el-table-column label="流程操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
+            v-if="hasAuth('ban_delete')"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -165,6 +170,7 @@
         icon="el-icon-wallet"
         type="primary"
         @click="addClassStatus"
+        v-if="hasAuth('CWSH')"
         v-show="this.banji.B_type < 3"
         >财务费用确认
         </el-button>
@@ -404,6 +410,7 @@ import mammoth from "mammoth";
 import {saveAs} from "file-saver"
 import {addSeCount} from "../../../api/finance/seCount";
 import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
+import {getTenderProject} from "../../../api/tenderproject/tenderProject";
 
 let that
 export default {
@@ -573,13 +580,29 @@ export default {
     this.getList()
     listLecturers().then(res =>{
       this.lecturers = res.data.results
+    }).catch(err =>{
+      this.$notify.error({
+        title: '错误',
+        message: '没有讲师查询权限'
+      });
     })
   },
   methods:{
     getList(){
-      listBanJi().then(response =>{
+      let o = {}
+      if(this.$store.state.user.department === '财务'){
+        o = {}
+      }else {
+        o['BDepartment'] = this.$store.state.user.department
+      }
+      listBanJi(o).then(response =>{
         this.dataList = response.data.results
         this.loading = false
+      }).catch(err=>{
+        this.$notify.error({
+          title: '错误',
+          message: '没有班级查询权限'
+        });
       })
     },
     //重置菜单
@@ -683,9 +706,12 @@ export default {
         type: 'warning',
       }).then(() =>{
         getBanJi(row.id).then(res =>{
-          this.resetFW(res.data)
+          // this.resetFW(res.data)
         }).catch(err=>{
-          console.log(err)
+          this.$notify.error({
+            title: '错误',
+            message: '没有班级查询权限'
+          });
         })
         deleteBanJi(row.id).then(res =>{
           this.$message({
@@ -693,10 +719,15 @@ export default {
             type: 'success',
           });
           this.getList();
-        });
+        }).catch(err=>{
+          this.$notify.error({
+            title: '错误',
+            message: '没有班级删除权限'
+          });
+        })
       }).catch(() =>{
         this.$message({
-          message: "已取消删除",
+          message: "已取消",
           type: 'warning',
         });
       })
@@ -708,7 +739,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.resetFW(this.form)
+        // this.resetFW(this.form)
         this.reset()
         this.open = false
       }).catch(() => {
@@ -771,6 +802,7 @@ export default {
         })
       }else {
         let json = {}
+        json['BDepartment'] = this.$store.state.user.department
         json[this.select] = this.find
         listBanJi(json).then(res =>{
           this.dataList = res.data.results
@@ -820,15 +852,16 @@ export default {
               Message.error(err)
             })
           }).catch(err=>{
-            console.log(err)
             Message.error(err)
           })
-
         })
     },
     //表格参数渲染
     _Bis_fee_applied(row){
       return isNot(row.Bis_fee_applied)
+    },
+    _Bis_Bis_closed(row){
+      return isNot(row.Bis_closed)
     },
     _BClass_type(row){
       return banjiType(row.BClass_type)
@@ -1018,7 +1051,6 @@ export default {
             Message.error('导入失败')
           }
         },2000)
-
       }else Message.warning({
         message: '请先选择导入文件',
         showClose: true
@@ -1284,6 +1316,20 @@ export default {
                   parseFloat(that.settle.automobile) + parseFloat(that.settle.lodging) +
                   parseFloat(that.settle.life) + parseFloat(that.data.adCost) +
                   parseFloat(that.data.teCost) + parseFloat(that.data.empCount);
+                // console.log(parseFloat(that.settle.consumables))
+                // console.log(parseFloat(that.settle.material))
+                // console.log(parseFloat(that.settle.field))
+                // console.log(parseFloat(that.settle.conference))
+                // console.log(parseFloat(that.settle.appraisal))
+                // console.log(parseFloat(that.settle.reception))
+                // console.log(parseFloat(that.settle.traffic))
+                // console.log(parseFloat(that.settle.automobile))
+                // console.log(parseFloat(that.settle.lodging))
+                // console.log(parseFloat(that.settle.life))
+                // console.log(parseFloat(that.data.adCost))
+                // console.log(parseFloat(that.data.teCost))
+                // console.log(parseFloat(that.data.empCount))
+                // console.log(parseFloat(that.data.costCount))
                 loading.close()
               })
             })
@@ -1299,64 +1345,66 @@ export default {
         }
         let zip = new PizZip(content)
         let doc = new Docxtemplater().loadZip(zip)
-        doc.setData({
-          product: this.banji.BT.tp_projectName,
-          banName: this.banji.BClass_name,
-          address: this.banji.BClass_address,
-          count: 50,
-          day: '',
-          teName: this.banji.BLecturer,
-          BanZR: this.banji.BHead_teacher,
-          startYear: this.banji.BCStartTime.split('-')[0],
-          startmonth: this.banji.BCStartTime.split('-')[1],
-          startDay: this.banji.BCStartTime.split('-')[2],
-          endYear: this.banji.BCEndTime.split('-')[0],
-          endMonth: this.banji.BCEndTime.split('-')[1],
-          endDay: this.banji.BCEndTime.split('-')[2],
-          preIncome: parseFloat(this.banji.BGov_fee)*50,
-          profit: this.settle.profit,
-          consumables: this.settle.consumables,
-          material: this.settle.material,
-          field: this.settle.field,
-          conference: this.settle.conference,
-          appraisal: this.settle.appraisal,
-          reception: this.settle.reception,
-          traffic: this.settle.traffic,
-          automobile: this.settle.automobile,
-          lodging: this.settle.lodging,
-          life: this.settle.life,
-          dept: this.banji.BDepartment,
-          adCost: this.data.adCost,
-          teCost: this.data.teCost,
-          shift: this.data.shift,
-          overtime: this.data.overtime,
-          travel: this.data.travel,
-          costCount: this.data.costCount,
-          emp: this.emp,
-          empCount: this.data.empCount,
-          terd: this.terd,
-          adrd: this.adrd,
+        getTenderProject(this.banji.BT).then(res=>{
+          doc.setData({
+            product: res.data.tp_projectName,
+            banName: this.banji.BClass_name,
+            address: this.banji.BClass_address,
+            count: '',
+            day: '',
+            teName: this.banji.BLecturer,
+            BanZR: this.banji.BHead_teacher,
+            startYear: this.banji.BCStartTime.split('-')[0],
+            startmonth: this.banji.BCStartTime.split('-')[1],
+            startDay: this.banji.BCStartTime.split('-')[2],
+            endYear: this.banji.BCEndTime.split('-')[0],
+            endMonth: this.banji.BCEndTime.split('-')[1],
+            endDay: this.banji.BCEndTime.split('-')[2],
+            preIncome: parseFloat(this.banji.BGov_fee)*50,
+            profit: this.settle.profit,
+            consumables: this.settle.consumables,
+            material: this.settle.material,
+            field: this.settle.field,
+            conference: this.settle.conference,
+            appraisal: this.settle.appraisal,
+            reception: this.settle.reception,
+            traffic: this.settle.traffic,
+            automobile: this.settle.automobile,
+            lodging: this.settle.lodging,
+            life: this.settle.life,
+            dept: this.banji.BDepartment,
+            adCost: this.data.adCost,
+            teCost: this.data.teCost,
+            shift: this.data.shift,
+            overtime: this.data.overtime,
+            travel: this.data.travel,
+            costCount: this.data.costCount.toFixed(2),
+            emp: this.emp,
+            empCount: this.data.empCount,
+            terd: this.terd,
+            adrd: this.adrd,
+          })
+          try {
+            doc.render()
+          }catch (error) {
+            this.$message.error('财务模板系统出现漏洞，请联系技术人员')
+            throw error
+          }
+          this.down = doc.getZip().generate({
+            type: "blob",
+            mimeType:
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          })
+          let out = doc.getZip().generate({
+            type: "nodebuffer",
+            mimeType:
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          }); //Output the document using Data-URI
+          mammoth.convertToHtml({arrayBuffer: out}).then(result =>{
+            this.html1 = result.value.replaceAll('<table>','<table border="1" style="margin-top:20px; width: 800px; background-color: LightGray">').replaceAll('undefined','');
+          }).done()
+          // saveAs(out, "开办费用结算表.docx");
         })
-        try {
-          doc.render()
-        }catch (error) {
-          this.$message.error('财务模板系统出现漏洞，请联系技术人员')
-          throw error
-        }
-        this.down = doc.getZip().generate({
-          type: "blob",
-          mimeType:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        })
-        let out = doc.getZip().generate({
-          type: "nodebuffer",
-          mimeType:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        }); //Output the document using Data-URI
-        mammoth.convertToHtml({arrayBuffer: out}).then(result =>{
-          this.html1 = result.value.replaceAll('<table>','<table border="1" style="margin-top:20px; width: 800px; background-color: LightGray">').replaceAll('undefined','');
-        }).done()
-        // saveAs(out, "开办费用结算表.docx");
       })
     },
     handleCWDown(){

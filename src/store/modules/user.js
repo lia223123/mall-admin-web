@@ -1,13 +1,16 @@
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import {listEmployee} from "../../api/employeeInfo/employee";
+import {getUserPerms} from "../../api/login";
 
 const user = {
   state: {
     token: getToken(),
     name: '',
     avatar: '',
-    roles: []
+    roles: [],
+    id: '',
+    department: '',
   },
 
   mutations: {
@@ -22,6 +25,12 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_ID: (state, id) => {
+      state.id = id
+    },
+    SET_DEPARTMENT: (state, department) => {
+      state.department = department
     }
   },
 
@@ -47,7 +56,8 @@ const user = {
     // 获取用户信息
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        getInfo().then(response => {
+        getUserPerms().then(response => {
+          console.log(response)
           const data = response.data
           if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
             commit('SET_ROLES', data.roles)
@@ -56,6 +66,8 @@ const user = {
           }
           commit('SET_NAME', data.username)
           commit('SET_AVATAR', data.avatar)
+          commit('SET_ID', data.id)
+          commit('SET_DEPARTMENT', data.department)
           resolve(response)
         }).catch(error => {
           reject(error)

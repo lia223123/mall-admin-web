@@ -56,7 +56,7 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="()=>{this.updateOpen = true}" type="warning">招生老师图片资料上传</el-button>
+                  <el-button @click="()=>{this.updateOpen = true}" type="warning" v-if="hasAuth('ad_edit')">招生老师图片资料上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button @click="DidCard" type="primary">身份证正面资料下载</el-button>
@@ -98,8 +98,8 @@
                   <el-input v-model="user.AD_bankCode" placeholder="请输入银行卡号" :disabled="isDes" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
-                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes">保存</el-button>
+                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes" v-if="hasAuth('ad_edit')">修改</el-button>
+                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes" v-if="hasAuth('ad_edit')">保存</el-button>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>

@@ -17,6 +17,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
+          v-if="hasAuth('ad_create')"
         >新增</el-button>
       </el-col>
     </el-row>
@@ -44,6 +45,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
+            v-if="hasAuth('ad_delete')"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -206,6 +208,12 @@ export default {
       listAdTeacher().then(response =>{
         this.dataList = response.data.results
         this.loading = false
+      }).catch(err=>{
+        this.$notify({
+          title: '错误',
+          message: '没有查询招生老师信息权限',
+          type: 'error'
+        });
       })
     },
     //重置菜单

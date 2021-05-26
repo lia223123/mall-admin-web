@@ -38,7 +38,7 @@
               </li>
               <li class="list-group-item">
                 项目名
-                <div class="pull-right">{{ Class.BT_tp_projectName }}</div>
+                <div class="pull-right">{{ tenPro.tp_projectName }}</div>
               </li>
               <li class="list-group-item">
                 班主任
@@ -113,8 +113,8 @@
             <el-tab-pane label="班级基本资料" name="Classinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="()=>{ this.open = true }" type="warning">班级集体照上传</el-button>
-                  <el-button @click="()=>{ this.ClassOpen = true}" type="warning">课程表上传</el-button>
+                  <el-button @click="()=>{ this.open = true }" type="warning" v-if="hasAuth('ban_edit')">班级集体照上传</el-button>
+                  <el-button @click="()=>{ this.ClassOpen = true}" type="warning" v-if="hasAuth('ban_edit')">课程表上传</el-button>
                 </el-form-item>
                 <el-form-item>
                   <el-button @click="DidCard" type="primary">班级集体照下载</el-button>
@@ -259,8 +259,8 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
-                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes">保存</el-button>
+                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes" v-if="hasAuth('ban_edit')">修改</el-button>
+                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes" v-if="hasAuth('ban_edit')">保存</el-button>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>
@@ -281,6 +281,7 @@ import {editBanJi, getBanJi} from "../../../api/studentsInfo/banji";
 import {Message} from "element-ui";
 import {getBanFile} from "../../../api/studentsInfo/banFile";
 import {getAllFile} from "../../../api/studentsInfo/allFile";
+import {getTenderProject} from "../../../api/tenderproject/tenderProject";
 
 export default {
   name: "detail",
@@ -405,7 +406,8 @@ export default {
       lecturers: {},
       dialogImageUrl: '',
       open: false,
-      ClassOpen: false
+      ClassOpen: false,
+      tenPro: {}
     }
   },
   created() {
@@ -420,8 +422,17 @@ export default {
     //获取信息
     getClass(id){
       getBanJi(id).then(res =>{
+        console.log(res.data)
         this.Class = res.data
         this.Class.BClass_name = this.Class.BClass_name.toString()
+        getTenderProject(res.data.BT).then(res =>{
+          this.tenPro = res.data
+        })
+      }).catch(()=>{
+        this.$notify.error({
+          title: '错误',
+          message: '没有班级查询权限'
+        });
       })
     },
     //下载文件

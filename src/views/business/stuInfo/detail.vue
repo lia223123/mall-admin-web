@@ -96,10 +96,10 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <el-form>
                 <el-form-item>
-                  <el-button @click="DidCardUp">图片资料上传</el-button>
+                  <el-button @click="DidCardUp" v-if="hasAuth('stu_edit')">图片资料上传</el-button>
                 </el-form-item>
                 <el-form-item>
-                  <el-button @click="DidCard"  >身份证正面下载</el-button>
+                  <el-button @click="DidCard" >身份证正面下载</el-button>
                   <el-button @click="DDiploma" >身份证反面下载</el-button>
                   <el-button @click="DOccupation" >学生图片下载</el-button>
                 </el-form-item>
@@ -239,8 +239,8 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes">修改</el-button>
-                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes">保存</el-button>
+                  <el-button type="primary" size="mini" @click="update" :disabled="!isDes" v-if="hasAuth('stu_edit')">修改</el-button>
+                  <el-button type="primary" size="mini" @click="submit" :disabled="isDes" v-if="hasAuth('stu_edit')">保存</el-button>
                   <el-button type="danger" size="mini" @click="back">返回</el-button>
                 </el-form-item>
               </el-form>

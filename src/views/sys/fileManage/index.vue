@@ -9,74 +9,23 @@
       </el-input>
       <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
     </div>
-    <el-row :gutter="10" style="margin-top: 15px">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-if="hasAuth('iden_create')"
-        >新增</el-button>
-      </el-col>
-    </el-row>
     <el-table v-loading="loading" :data="dataList" border>
       <el-table-column label="id" align="center" prop="id"/>
-      <el-table-column label="机构编号" align="center" prop="ao_code" />
-      <el-table-column label="机构纳税人识别" align="center" prop="ao_ns_code"/>
-      <el-table-column label="机构名称" align="center" prop="ao_name"/>
-      <el-table-column label="鉴定范围" align="center" prop="ao_fields"/>
-      <el-table-column label="鉴定费" align="center" prop="ao_fee"/>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            v-if="hasAuth('iden_edit')"
-            @click="handleUpdate(scope.row)"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-if="hasAuth('iden_delete')"
-          >删除</el-button>
-        </template>
-      </el-table-column>
+      <el-table-column label="文件类型" align="center" prop="file_type" />
+      <el-table-column label="文件名" align="center" prop="file_name"/>
+      <el-table-column label="上传时间" align="center" prop="file_uptime"/>
+      <el-table-column label="操作状态" align="center" prop="file_status" :formatter="_file"/>
+      <el-table-column label="上传人" align="center" prop="file_person"/>
+      <el-table-column label="文件路径" align="center" prop="file_url"/>
     </el-table>
 
-    <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body  :before-close="handleClose">
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="机构编号" prop="ao_code">
-          <el-input v-model="form.ao_code" placeholder="请输入机构编号" />
-        </el-form-item>
-        <el-form-item label="机构名称" prop="ao_name">
-          <el-input v-model="form.ao_name" placeholder="请输入机构名称" />
-        </el-form-item>
-        <el-form-item label="机构纳税人识别" prop="ao_ns_code">
-          <el-input v-model="form.ao_ns_code" placeholder="请输入机构纳税人识别" />
-        </el-form-item>
-        <el-form-item label="鉴定范围" prop="ao_fields">
-          <el-input v-model="form.ao_fields" placeholder="请输入鉴定范围"/>
-        </el-form-item>
-        <el-form-item label="鉴定费" prop="ao_fee">
-          <el-input v-model="form.ao_fee" placeholder="请输入鉴定费"/>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import {addIdentify, deleteIdentify, editIdentify, getIdentify, listIdentify} from "../../../api/companys/identify";
+import {listFileCompany} from "../../../api/fileConpany/filecompany";
+import {listFileManage} from "../../../api/fileManage/filemanage";
 
 export default {
   name: "index",
@@ -97,26 +46,26 @@ export default {
       form: {},
       //查询参数
       query:[
-        {name:'机构编号',id: 'ao_code'},
-        {name:'机构纳税人识别',id: 'ao_ns_code'},
-        {name:'机构名称',id: 'ao_name'},
-        {name:'鉴定范围',id: 'ao_fields'},
+        {name:'文件类型',id: 'file_type'},
+        {name:'文件名',id: 'file_name'},
+        {name:'上传时间',id: 'file_uptime'},
+        {name:'操作状态',id: 'file_status'},
       ],
       rules: {
-        ao_code:[
-          {required: true, message: "机构编号不能为空", trigger: "blur"}
+        file_type:[
+          {required: true, message: "文件类型不能为空", trigger: "blur"}
         ],
-        ao_name: [
-          {required: true, message: "机构名称不能为空", trigger: "blur"}
+        file_uptime: [
+          {required: true, message: "上传时间不能为空", trigger: "blur"}
         ],
-        ao_ns_code: [
-          {required: true, message: "机构纳税人识别不能为空", trigger: "blur"}
+        file_name: [
+          {required: true, message: "文件名不能为空", trigger: "blur"}
         ],
-        ao_fee: [
-          {required: true, message: "鉴定费不能为空", trigger: "blur"}
+        file_person: [
+          {required: true, message: "上传人不能为空", trigger: "blur"}
         ],
-        ao_fields: [
-          {required: true, message: "鉴定范围不能为空", trigger: "blur"}
+        file_status: [
+          {required: true, message: "操作状态不能为空", trigger: "blur"}
         ],
       }
     }
@@ -126,13 +75,13 @@ export default {
   },
   methods:{
     getList(){
-      listIdentify().then(response =>{
+      listFileManage().then(response =>{
         this.dataList = response.data.results
         this.loading = false
       }).catch(err=>{
         this.$notify({
           title: '错误',
-          message: '没有查询鉴定机构权限',
+          message: '没有查询文件记录权限',
           type: 'error'
         });
       })
@@ -141,11 +90,11 @@ export default {
     reset(){
       this.form = {
         id: undefined,
-        ao_code: undefined,
-        ao_ns_code: undefined,
-        ao_fields: undefined,
-        ao_fee: undefined,
-        ao_name: undefined,
+        file_type: undefined,
+        file_name: undefined,
+        file_status: undefined,
+        file_person: undefined,
+        file_uptime: undefined,
       };
       this.$refs['form'].resetFields();
     },
@@ -162,13 +111,13 @@ export default {
     },
     //修改数据
     handleUpdate(row){
-        this.form = row;
-        this.open = true;
-        this.title = '修改工种鉴定机构信息';
+      this.form = row;
+      this.open = true;
+      this.title = '修改工种鉴定机构信息';
     },
     //删除数据
     handleDelete(row){
-      this.$confirm('是否删除机构编号为' + row.ao_code + "的工种鉴定机构信息？","警告", {
+      this.$confirm('是否删除文件类型为' + row.file_type + "的文件信息？","警告", {
         confirmButtonText: '确定',
         cancelButtonText: "取消",
         type: 'warning',
@@ -219,13 +168,20 @@ export default {
               this.reset();
             }).catch(() =>{
               this.$message({
-                message: "机构编号已存在",
+                message: "文件类型已存在",
                 type: 'warning'
               });
             })
           }
         }
       });
+    },
+    _file(row){
+      if(row.file_status === 1){
+        return '上传'
+      }else if(row.file_status === 2){
+        return '下载'
+      }else return '删除'
     },
     //关闭弹窗
     handleClose(done){

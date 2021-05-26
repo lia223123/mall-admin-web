@@ -17,11 +17,12 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAddPro"
+          v-if="hasAuth('tender_create')"
         >新增</el-button>
       </el-col>
     </el-row>
     <el-table v-loading="loading" :data="dataList" border>
-      <el-table-column label="id" align="center" prop="id"/>
+<!--      <el-table-column label="id" align="center" prop="id"/>-->
       <el-table-column label="项目编号" align="center" prop="tp_projectCode">
         <template slot-scope="scope">
           <router-link :to="'/tender/' + scope.row.id" class="link-type">
@@ -33,6 +34,7 @@
       </el-table-column>
       <el-table-column label="项目名称" align="center" prop="tp_projectName"/>
       <el-table-column label="招标单位" align="center" prop="tp_tCompany"/>
+      <el-table-column label="项目状态" align="center" prop="tp_status" :formatter="_status"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -40,11 +42,13 @@
             type="text"
             icon="el-icon-collection-tag"
             @click="handleAdd(scope.row)"
+            v-if="hasAuth('ban_create')"
           >开设班级</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
+            v-if="hasAuth('tender_delete')"
             @click="handleDelete(scope.row)"
           >删除</el-button>
         </template>
@@ -232,6 +236,14 @@
               <el-input v-model="Proform.tp_tenderClass" placeholder="请输入所开班级"/>
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item label="项目状态" prop="tp_status" label-width="80px">
+              <el-select v-model="Proform.tp_status" placeholder="请选择项目状态">
+                <el-option label="中标" value="1"/>
+                <el-option label="投标" value="2"/>
+              </el-select>
+            </el-form-item>
+          </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -254,6 +266,8 @@ import {
   getTenderProject,
   listTenderProject
 } from "../../../api/tenderproject/tenderProject";
+import {formatDate} from "../../../utils/date";
+import {formatTime, parseTime} from "../../../utils";
 
 export default {
   name: "index",
@@ -394,6 +408,9 @@ export default {
         tp_tenderClass:[
           {required: true, message: "所开班级不能为空", trigger: "blur"}
         ],
+        tp_status:[
+          {required: true, message: "项目状态不能为空", trigger: "blur"}
+        ],
       },
       Secret: {},
       BType: [
@@ -437,7 +454,13 @@ export default {
   },
   methods:{
     getList(){
-      listTenderProject().then(response =>{
+      let o = {}
+      if(this.$store.state.user.department === '财务'){
+        o = {}
+      }else {
+        o['tp_part'] = this.$store.state.user.department
+      }
+      listTenderProject(o).then(response =>{
         this.dataList = response.data.results
         this.loading = false
       })
@@ -446,10 +469,11 @@ export default {
     reset(){
       this.form = {
         id: undefined,
-        tp_tCompany: undefined,
-        tp_projectCode: undefined,
+        BClass_code: undefined,
+        BClass_name: undefined,
+        BR_code: undefined,
+        BCStartTime: undefined,
         BCEndTime: undefined,
-        tp_projectName: undefined,
         BClass_address: undefined,
         BDepartment: undefined,
         BHead_teacher: undefined,
@@ -472,8 +496,7 @@ export default {
         Bis_closed: undefined,
         BClass_photo: undefined,
         BT: undefined,
-        B_type: 2,
-        BT_tp_projectName: undefined
+        B_type: undefined,
       };
       this.Proform = {
         id: undefined,
@@ -488,9 +511,10 @@ export default {
         tp_part: undefined,
         tp_tenderAmount: undefined,
         tp_tenderClass: undefined,
+        tp_status: undefined,
       };
       this.active = 1;
-      this.$refs['form'].resetFields();
+      // this.$refs['form'].resetFields();
       // this.$refs['Proform'].resetFields();
     },
     //查询参数重置
@@ -501,9 +525,55 @@ export default {
     },
     //新增班级
     handleAdd(row){
-      this.open = true;
-      this.form.BT = row.id
-      this.form.BT_tp_projectName = row.tp_projectName
+      if(row.tp_status === 1){
+        this.open = true;
+        this.form.BT = row.id
+        this.form.B_type = 2
+      } else {
+        this.$confirm('确定开设一个投标项目的班级？','开设班级',{
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(()=>{
+          this.form = {
+            BClass_code: row.tp_projectCode + '0000',
+            BClass_name: row.tp_projectName,
+            BR_code: 0,
+            BCStartTime: formatDate(new Date(Date.now()) ,'yyyy-MM-dd'),
+            BCEndTime: formatDate(new Date(Date.now()) ,'yyyy-MM-dd'),
+            BClass_address: 0,
+            BDepartment: this.$store.state.user.department,
+            BHead_teacher: 0,
+            BClass_type: 2,
+            BLev: 0,
+            BOt_name: 0,
+            BLecturer: 0,
+            BStaff: 0,
+            BSCount: 0,
+            BManagement_fee: 0,
+            BLiving_fee: 0,
+            BGov_fee: 0,
+            BCommission: 0,
+            BClass_pay: 0,
+            BClass_hour: 0,
+            BAdmissions_commission: 0,
+            BCo_organizer: 0,
+            Bco_organizer_commission: 0,
+            Bis_fee_applied: 1,
+            Bis_closed: 1,
+            BClass_photo: undefined,
+            BT: row.id,
+            B_type: 2,
+          }
+          addBanJi(this.form).then(()=>{
+            Message.success('开设班级成功')
+            this.reset()
+          }).catch(err=>{
+            Message.error('投标项目已开设过班级,班级编号为' + row.tp_projectCode + '0000')
+            this.reset()
+          })
+        })
+      }
     },
     //新增项目
     handleAddPro(){
@@ -627,6 +697,7 @@ export default {
         })
       }else {
         let json = {}
+        json['tp_part'] = this.$store.state.user.department
         json[this.select] = this.find
         listTenderProject(json).then(res =>{
           this.dataList = res.data.results
@@ -644,6 +715,12 @@ export default {
     up(){
       this.active --
     },
+    //状态参数
+    _status(row){
+      if(row.tp_status === 1){
+        return '中标'
+      }else return '投标'
+    }
   }
 }
 </script>
