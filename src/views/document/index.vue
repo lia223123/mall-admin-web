@@ -376,7 +376,6 @@ export default {
   },
   created(){
     this.getList()
-    console.log(this.$store.state)
     listFileCompany().then(res =>{
       this.fileCompany = res.data.results
     }).catch(err=>{

@@ -238,6 +238,11 @@
                     <el-option value="2" label="否"/>
                   </el-select>
                 </el-form-item>
+                <el-form-item label="所在班级"  label-width="80px">
+                  <el-select v-model="user.STUBj" placeholder="请选择班级" filterable multiple style="width: 500px" :disabled="isDes">
+                    <el-option v-for="item in Banji" :label="item.BClass_name" :value="item.id" :key="item.id"/>
+                  </el-select>
+                </el-form-item>
                 <el-form-item>
                   <el-button type="primary" size="mini" @click="update" :disabled="!isDes" v-if="hasAuth('stu_edit')">修改</el-button>
                   <el-button type="primary" size="mini" @click="submit" :disabled="isDes" v-if="hasAuth('stu_edit')">保存</el-button>
@@ -268,27 +273,27 @@
                 </el-col>
               </el-row>
             </el-tab-pane>
-            <el-tab-pane label="所在班级" name="classInfo">
-             <el-col :span="16" :xs="24" v-for="item in user.STUBj" :key="item.id">
-               <el-card class="box-card" >
-                 <div slot="header" class="clearfix">
-                   班级编号： <span>{{item.BClass_code}}</span>
-                 </div>
-                 <div class="text item">
-                   班级名称：{{item.BClass_name}}
-                 </div>
-                 <div class="text item">
-                   开班时间：{{item.BCStartTime}}——{{item.BCEndTime}}
-                 </div>
-                 <div class="text item">
-                   班级状态：{{item.B_type | classStatus}}
-                 </div>
-                 <div class="text item">
-                   证书等级：{{item.BLev}}
-                 </div>
-               </el-card>
-             </el-col>
-            </el-tab-pane>
+<!--            <el-tab-pane label="所在班级" name="classInfo">-->
+<!--             <el-col :span="16" :xs="24" v-for="item in user.STUBj" :key="item.id">-->
+<!--               <el-card class="box-card" >-->
+<!--                 <div slot="header" class="clearfix">-->
+<!--                   班级编号： <span>{{item.BClass_code}}</span>-->
+<!--                 </div>-->
+<!--                 <div class="text item">-->
+<!--                   班级名称：{{item.BClass_name}}-->
+<!--                 </div>-->
+<!--                 <div class="text item">-->
+<!--                   开班时间：{{item.BCStartTime}}——{{item.BCEndTime}}-->
+<!--                 </div>-->
+<!--                 <div class="text item">-->
+<!--                   班级状态：{{item.B_type | classStatus}}-->
+<!--                 </div>-->
+<!--                 <div class="text item">-->
+<!--                   证书等级：{{item.BLev}}-->
+<!--                 </div>-->
+<!--               </el-card>-->
+<!--             </el-col>-->
+<!--            </el-tab-pane>-->
           </el-tabs>
         </el-card>
       </el-col>
@@ -307,6 +312,7 @@ import {Message} from "element-ui";
 import {listTrainBook} from "../../../api/studentsInfo/trainBook";
 import {getAllFile} from "../../../api/studentsInfo/allFile";
 import {listStuAndBanAndAD} from "../../../api/waijian";
+import {listBanJi} from "../../../api/studentsInfo/banji";
 
 export default {
   name: "detail",
@@ -364,7 +370,7 @@ export default {
       //取消按钮的禁用
       cancelIsDes: false,
       //其他参数
-      banJi: {}
+      Banji: {}
     }
   },
   created() {
@@ -379,8 +385,11 @@ export default {
       student: id
     }
     listStuAndBanAndAD(obj).then(res =>{
-      console.log(res.data.results)
+      // console.log(res.data.results)
     });
+    listBanJi().then(res =>{
+      this.Banji = res.data.results
+    })
     listTrainBook(obj).then(res =>{
       this.books = res.data.results
     });
@@ -389,6 +398,7 @@ export default {
     //获取信息
     getUser(id){
       getStudent(id).then(res =>{
+        console.log(res.data)
         this.user = res.data
         this.user.STU_gender = this.user.STU_gender.toString()
         this.user.STU_filed_account = this.user.STU_filed_account.toString()

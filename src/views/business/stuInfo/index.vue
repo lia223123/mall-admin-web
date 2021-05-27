@@ -203,6 +203,15 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="16">
+            <el-form-item label="所在班级"  label-width="80px">
+              <el-select v-model="form.STUBj" placeholder="请选择班级" filterable multiple style="width: 500px">
+                <el-option v-for="item in Banji" :label="item.BClass_name" :value="item.id" :key="item.id"/>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -278,6 +287,7 @@ import {
 import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
 import {getStuFile} from "../../../api/studentsInfo/stuFile";
 import {getAllFile} from "../../../api/studentsInfo/allFile";
+import {listBanJi} from "../../../api/studentsInfo/banji";
 
 export default {
   name: "index",
@@ -389,11 +399,15 @@ export default {
       Teacher: {},
       imgOpen: false,
       canIsDes: false,
-      selectList: []
+      selectList: [],
+      Banji: {}
     }
   },
   created() {
     this.getList()
+    listBanJi().then(res=>{
+      this.Banji = res.data.results
+    })
     listAdTeacher().then(res =>{
       this.Teacher = res.data.results
     }).catch(err=>{

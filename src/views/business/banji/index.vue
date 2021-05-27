@@ -11,7 +11,7 @@
       <el-button icon="el-icon-export" size="mini" @click="stuInfo_export" type="primary">学员信息模板导出</el-button>
     </div>
     <el-table v-loading="loading" :data="dataList" border >
-      <el-table-column label="id" align="center" prop="id"/>
+<!--      <el-table-column label="id" align="center" prop="id"/>-->
       <el-table-column label="班级编号" align="center" prop="BClass_code">
         <template slot-scope="scope">
           <router-link :to="'/banji/' + scope.row.id" class="link-type">
@@ -272,29 +272,31 @@
           <el-row>
             <el-col :span="5">
               <el-form-item label="姓名">
-                <el-input placeholder="请输入姓名" v-model="domain.te_name"/>
+                <el-select placeholder="请选择教师" v-model="domain.te_name" @change="teaCh(index)">
+                  <el-option :label="teather[1]" :value="teather[1]"/>
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="电话">
-                <el-input placeholder="请输入电话" v-model="domain.te_phone" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')"/>
+                <el-input placeholder="请输入电话" v-model="domain.te_phone" maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')" disabled/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="身份证">
-                <el-input placeholder="请输入身份证" v-model="domain.te_cid" maxlength="18"/>
+                <el-input placeholder="请输入身份证" v-model="domain.te_cid" maxlength="18" disabled/>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col :span="6">
               <el-form-item label="开户银行" label-width="80px">
-                <el-input placeholder="请输入开户行" v-model="domain.te_bank"/>
+                <el-input placeholder="请输入开户行" v-model="domain.te_bank" disabled/>
               </el-form-item>
             </el-col>
             <el-col :span="7">
               <el-form-item label="银行卡号" label-width="80px">
-                <el-input placeholder="请输入银行卡号" v-model="domain.te_bankCode" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22'/>
+                <el-input placeholder="请输入银行卡号" v-model="domain.te_bankCode" onkeyup="value=value.replace(/[^\d]/g,'')" maxlength='22' disabled/>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -570,7 +572,8 @@ export default {
         sc_count: '',
       },
       //判断学生上传状态
-      ad_status: 0
+      ad_status: 0,
+      teather: [],
     }
   },
   beforeCreate() {
@@ -842,7 +845,6 @@ export default {
           addSeCount(this.SeCount).then(res=>{
             Message.success({
               message: '班级编号' + this.form.BClass_code + '费用结算结束',
-              showClose: true
             })
             editBanJi(this.form).then(res=>{
               this.reset()
@@ -1001,31 +1003,33 @@ export default {
             item.STU_personnel_category = Fstu_personnel(item.STU_personnel_category)
             item.STU_filed_account = FisNot(item.STU_filed_account)
           }
-          item.STUBj = [this.banji_id]
-          if(item.AD_cid !== "") {
-            let o = {
-              AD_cid: item.AD_cid
-            }
-            listAdTeacher(o).then(res => {
-              if (res.data.results.length < 1) {
-                Message.warning({
-                  message: item.AD_name + "未在系统录入，请录入后再导入学员信息",
-                  showClose: true
-                })
-                item.StuAD = []
-                that.ad_status = 1
-              } else {
-                item.StuAD = [res.data.results[0].id]
-              }
-            }).then(()=>{
-              delete item.AD_cid
-              delete item.AD_name
-            })
-          }else {
-            item.StuAD = []
-            delete item.AD_cid
-            delete item.AD_name
-          }
+          item.STUBj = this.banji_id
+          delete item.AD_cid
+          delete item.AD_name
+          // if(item.AD_cid !== "") {
+          //   let o = {
+          //     AD_cid: item.AD_cid
+          //   }
+          //   listAdTeacher(o).then(res => {
+          //     if (res.data.results.length < 1) {
+          //       Message.warning({
+          //         message: item.AD_name + "未在系统录入，请录入后再导入学员信息",
+          //         showClose: true
+          //       })
+          //       item.StuAD = []
+          //       that.ad_status = 1
+          //     } else {
+          //       item.StuAD = [res.data.results[0].id]
+          //     }
+          //   }).then(()=>{
+          //     delete item.AD_cid
+          //     delete item.AD_name
+          //   })
+          // }else {
+          //   item.StuAD = []
+          //   delete item.AD_cid
+          //   delete item.AD_name
+          // }
         })
         //可能修改
         setTimeout(function () {
@@ -1050,7 +1054,7 @@ export default {
             loading.close()
             Message.error('导入失败')
           }
-        },2000)
+        },3000)
       }else Message.warning({
         message: '请先选择导入文件',
         showClose: true
@@ -1157,6 +1161,7 @@ export default {
     handleJSDJ(value){
       this.JSOpen = true
       this.banji_id = value.id
+      this.teather = value.BLecturer.split(':')
       this.JSform.detail = [
         {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
       ]
@@ -1360,7 +1365,7 @@ export default {
             endYear: this.banji.BCEndTime.split('-')[0],
             endMonth: this.banji.BCEndTime.split('-')[1],
             endDay: this.banji.BCEndTime.split('-')[2],
-            preIncome: parseFloat(this.banji.BGov_fee)*50,
+            preIncome: parseFloat(this.banji.BGov_fee),
             profit: this.settle.profit,
             consumables: this.settle.consumables,
             material: this.settle.material,
@@ -1409,6 +1414,21 @@ export default {
     },
     handleCWDown(){
       saveAs(this.down,this.banji.BClass_name + "费用结算表.docx")
+    },
+    //教师改变的函数
+    teaCh(index){
+      let o = {
+        LEid: this.teather[0]
+      }
+      listLecturers(o).then(res=>{
+        this.JSform.detail[index].te_name = res.data.results[0].LE_name
+        this.JSform.detail[index].te_cid = res.data.results[0].LE_cid
+        this.JSform.detail[index].te_phone = res.data.results[0].LE_phone
+        this.JSform.detail[index].te_bank = res.data.results[0].LE_bankName
+        this.JSform.detail[index].te_bankCode = res.data.results[0].LE_bankCode
+        this.JSform.detail[index].te_pay = 0
+        this.JSform.detail[index].key = Date.now()
+      })
     }
   }
 }

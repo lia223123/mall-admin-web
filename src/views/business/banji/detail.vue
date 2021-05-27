@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <el-col :span="6" :xs="24">
+      <el-col :span="8" :xs="24">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
             <span>班级详细信息</span>
@@ -422,7 +422,6 @@ export default {
     //获取信息
     getClass(id){
       getBanJi(id).then(res =>{
-        console.log(res.data)
         this.Class = res.data
         this.Class.BClass_name = this.Class.BClass_name.toString()
         getTenderProject(res.data.BT).then(res =>{
