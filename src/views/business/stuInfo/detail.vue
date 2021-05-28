@@ -23,10 +23,10 @@
                 性别
                 <div class="pull-right">{{ user.STU_gender | _sex }}</div>
               </li>
-              <li class="list-group-item">
-                年龄
-                <div class="pull-right">{{ user.STU_age }}</div>
-              </li>
+<!--              <li class="list-group-item">-->
+<!--                年龄-->
+<!--                <div class="pull-right">{{ user.STU_age }}</div>-->
+<!--              </li>-->
               <li class="list-group-item">
                 电话号码
                 <div class="pull-right">{{ user.STU_phone }}</div>
@@ -167,9 +167,9 @@
                 <el-form-item label="姓名" prop="STU_name">
                   <el-input v-model="user.STU_name" placeholder="请输入姓名" :disabled="isDes"/>
                 </el-form-item>
-                <el-form-item label="年龄" prop="STU_age">
-                  <el-input v-model="user.STU_age" placeholder="请输入年龄" :disabled="isDes"/>
-                </el-form-item>
+<!--                <el-form-item label="年龄" prop="STU_age">-->
+<!--                  <el-input v-model="user.STU_age" placeholder="请输入年龄" :disabled="isDes"/>-->
+<!--                </el-form-item>-->
                 <el-form-item label="性别" prop="STU_gender">
                   <el-select v-model="user.STU_gender" placeholder="请选择性别" :disabled="isDes">
                     <el-option value="1" label="男"/>
@@ -384,9 +384,9 @@ export default {
       tr_stu: id,
       student: id
     }
-    listStuAndBanAndAD(obj).then(res =>{
-      // console.log(res.data.results)
-    });
+    // listStuAndBanAndAD(obj).then(res =>{
+    //   // console.log(res.data.results)
+    // });
     listBanJi().then(res =>{
       this.Banji = res.data.results
     })

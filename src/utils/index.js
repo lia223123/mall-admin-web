@@ -109,7 +109,7 @@ export function stu_educations(num) {
 }
 export function Fstu_educations(num) {
   switch (num){
-    case '无': return 1
+    case '小学以下': return 1
     case '小学': return 2
     case '初中': return 3
     case '高中': return 4
@@ -152,10 +152,10 @@ export function InsureType(num){
   switch (num) {
     case 1: return "无"
     case 2: return "养老"
-    case 3: return "失业人员"
-    case 4: return "医疗"
-    case 5: return "失业"
-    case 6: return "工伤"
+    case 3: return "医疗"
+    case 4: return "失业"
+    case 5: return "工伤"
+    case 6: return "生育"
     default: return "无"
   }
 }
@@ -163,10 +163,10 @@ export function FInsureType(num){
   switch (num) {
     case "无": return 1
     case "养老": return 2
-    case "失业人员": return 3
-    case "医疗": return 4
-    case "失业": return 5
-    case "工伤": return 6
+    case "医疗": return 3
+    case "失业": return 4
+    case "工伤": return 5
+    case "生育": return 6
     default: return 1
   }
 }
@@ -241,7 +241,7 @@ export function CWInfo(num){
     case 6 : return '餐费'
     case 7 : return '交通费'
     case 8 : return '汽车费'
-    case 9 : return '食宿费'
+    case 9 : return '住宿费'
     case 10 : return '生活补贴'
     case 11 : return '提成费用'
     case 12 : return '授课费用'
@@ -261,7 +261,7 @@ export function FCWInfo(num){
     case '接待费' : return 6
     case '交通费' : return 7
     case '汽车费' : return 8
-    case '食宿费' : return 9
+    case '住宿费' : return 9
     case '生活补贴' : return 10
     case '提成费用' : return 11
     case '授课费用' : return 12
@@ -297,10 +297,10 @@ export let stuCharacter = {
     text: '性别',
     type: 'string'
   },
-  STU_age: {
-    text: '年龄',
-    type: 'string'
-  },
+  // STU_age: {
+  //   text: '年龄',
+  //   type: 'string'
+  // },
   STU_phone: {
     text: '手机号码',
     type: 'string'

@@ -45,7 +45,7 @@
       <el-table-column label="学员姓名" align="center" prop="STU_name"/>
       <el-table-column label="性别" align="center" prop="STU_gender" :formatter="_sex"/>
       <el-table-column label="电话" align="center" prop="STU_phone"/>
-      <el-table-column label="年龄" align="center" prop="STU_age"/>
+<!--      <el-table-column label="年龄" align="center" prop="STU_age"/>-->
       <el-table-column label="民族" align="center" prop="STU_nation"/>
       <el-table-column label="文化程度" align="center" prop="STU_education" :formatter="_education"/>
       <el-table-column label="专业" align="center" prop="STU_major"/>
@@ -85,11 +85,11 @@
               <el-input v-model="form.STU_name" placeholder="请输入学员姓名" />
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item label="年龄" prop="STU_age" label-width="50px">
-              <el-input type="number" v-model="form.STU_age" placeholder="请输入年龄" />
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="4">-->
+<!--            <el-form-item label="年龄" prop="STU_age" label-width="50px">-->
+<!--              <el-input type="number" v-model="form.STU_age" placeholder="请输入年龄" />-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
           <el-col :span="4">
             <el-form-item label="民族" prop="STU_nation" label-width="50px">
               <el-input v-model="form.STU_nation" placeholder="请输入民族"/>
@@ -371,10 +371,10 @@ export default {
       insureType:[
         {name: '无', id: 1},
         {name: '养老', id: 2},
-        {name: '失业人员', id: 3},
-        {name: '医疗', id: 4},
-        {name: '失业', id: 5},
-        {name: '工伤', id: 6},
+        {name: '医疗', id: 3},
+        {name: '失业', id: 4},
+        {name: '工伤', id: 5},
+        {name: '生育', id: 6},
       ],
       stu_personnel: [
         {name: '贫困家庭子女', id: 1},
@@ -831,7 +831,7 @@ export default {
           学员姓名: item.STU_name,
           身份证号: item.STU_sf_id,
           学员类型: item.STU_personnel_category,
-          年龄: item.STU_age,
+          // 年龄: item.STU_age,
           性别: item.STU_gender,
           所属民族: item.STU_nation,
           所属单位: item.STU_employer,

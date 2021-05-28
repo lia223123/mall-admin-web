@@ -148,12 +148,12 @@
         <el-table-column label="手机号码" align="center" prop="STU_phone"/>
         <el-table-column label="就业状态" align="center" prop="STU_employment_status"/>
         <el-table-column label="是否属于扶贫建档立卡户" align="center" prop="STU_filed_account"/>
-        <el-table-column label="年龄" align="center" prop="STU_age"/>
+<!--        <el-table-column label="年龄" align="center" prop="STU_age"/>-->
         <el-table-column label="专业" align="center" prop="STU_major"/>
         <el-table-column label="保险类型" align="center" prop="STU_insureType"/>
         <el-table-column label="健康状态" align="center" prop="STU_health_status"/>
-        <el-table-column label="招生老师姓名" align="center" prop="AD_name"/>
-        <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>
+<!--        <el-table-column label="招生老师姓名" align="center" prop="AD_name"/>-->
+<!--        <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>-->
       </el-table>
     </el-dialog>
 <!--财务详情-->
@@ -201,7 +201,7 @@
         </el-form>
     </el-dialog>
     <el-dialog title="员工费用登记" :visible.sync="YHOpen" width="1000px" append-to-body :before-close="handleClose">
-        <el-form :model="YHform" ref="YGdynamicForm" label-width="60px" class="demo-dynamic">
+        <el-form :model="YHform" ref="YGdynamicForm" label-width="60px" class="demo-dynamic" :rules="EMRule">
           <div v-for="(domain, index) in YHform.detail" :key="domain.key">
             <el-row>
               <el-col :span="5">
@@ -252,8 +252,8 @@
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="备注" label-width="80px">
-                  <el-input type="textarea" placeholder="请输入备注" v-model="domain.em_text"/>
+                <el-form-item label="摘要" label-width="80px" prop="em_text">
+                  <el-input type="textarea" placeholder="请输入摘要" v-model="domain.em_text"/>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -267,7 +267,7 @@
         </el-form>
     </el-dialog>
     <el-dialog title="教师费用登记" :visible.sync="JSOpen" width="1000px" append-to-body :before-close="handleClose">
-      <el-form :model="JSform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic">
+      <el-form :model="JSform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic" :rules="TERule">
         <div v-for="(domain, index) in JSform.detail" :key="domain.key">
           <el-row>
             <el-col :span="5">
@@ -300,8 +300,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="备注" label-width="60px">
-                <el-input type="textarea" placeholder="请输入备注" v-model="domain.te_text"/>
+              <el-form-item label="摘要" label-width="60px" prop="te_text">
+                <el-input type="textarea" placeholder="请输入摘要" v-model="domain.te_text"/>
               </el-form-item>
             </el-col>
             <el-col :span="6">
@@ -323,7 +323,7 @@
       </el-form>
     </el-dialog>
     <el-dialog title="开班费用登记" :visible.sync="KBOpen" width="1000px" append-to-body :before-close="handleClose">
-      <el-form :model="KBform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic">
+      <el-form :model="KBform" ref="KBdynamicForm" label-width="60px" class="demo-dynamic" :rules="ADRule">
         <div v-for="(domain, index) in KBform.detail" :key="domain.key">
           <el-row>
             <el-col :span="5">
@@ -354,8 +354,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="备注" label-width="60px">
-                <el-input type="textarea" placeholder="请输入备注" v-model="domain.ad_text"/>
+              <el-form-item label="摘要" label-width="60px" prop="ad_text">
+                <el-input type="textarea" placeholder="请输入摘要" v-model="domain.ad_text"/>
               </el-form-item>
             </el-col>
             <el-col :span="4">
@@ -397,7 +397,7 @@ import {
   stuCharacter
 } from "../../../utils";
 import {Message} from "element-ui";
-import {addBanJi, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
+import {addBanJi, BStuCount, deleteBanJi, editBanJi, getBanJi, listBanJi} from "../../../api/studentsInfo/banji";
 import xlsx from "xlsx";
 import {listLecturers} from "../../../api/studentsInfo/lecturers";
 import {addStudent} from "../../../api/studentsInfo/student";
@@ -476,7 +476,7 @@ export default {
         {name: '餐费',value: 6},
         {name: '交通费',value: 7},
         {name: '汽车费',value: 8},
-        {name: '食宿费',value: 9},
+        {name: '住宿费',value: 9},
         {name: '学员生活补贴',value: 10},
         // {name: '提成费用',value: 11},
         // {name: '授课费用',value: 12},
@@ -574,6 +574,22 @@ export default {
       //判断学生上传状态
       ad_status: 0,
       teather: [],
+      //校验
+      ADRule: {
+        ad_text:[
+          {required: true, message: '请输入摘要', trigger: 'blur'}
+        ]
+      },
+      TERule:{
+        te_text:[
+          {required: true, message: '请输入摘要', trigger: 'blur'}
+        ]
+      },
+      EMRule:{
+        em_text:[
+          {required: true, message: '请输入摘要', trigger: 'blur'}
+        ]
+      }
     }
   },
   beforeCreate() {
@@ -589,6 +605,7 @@ export default {
         message: '没有讲师查询权限'
       });
     })
+
   },
   methods:{
     getList(){
@@ -896,12 +913,12 @@ export default {
             '手机号码': null,
             '就业状态': null,
             '是否属于扶贫建档立卡户': null,
-            '年龄': null,
+            // '年龄': null,
             '专业': null,
             '保险类型': null,
             '健康状态': null,
-            '招生老师姓名': null,
-            '招生老师身份证号': null,
+            // '招生老师姓名': null,
+            // '招生老师身份证号': null,
           }
         ]
         let sheet = xlsx.utils.json_to_sheet(arr),
@@ -920,7 +937,7 @@ export default {
       let file = ev.raw
       if (!file) return;
       //判断excel的标题
-      let A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S']
+      let A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'/*, 'Q', 'R'*/]
       let NewArr = []
       //判断字段
       let OldArr = [
@@ -937,12 +954,12 @@ export default {
         '手机号码',
         '就业状态',
         '是否属于扶贫建档立卡户',
-        '年龄',
+        // '年龄',
         '专业',
         '保险类型',
         '健康状态',
-        '招生老师姓名',
-        '招生老师身份证号',
+        // '招生老师姓名',
+        // '招生老师身份证号',
       ]
       //读取file的数据
       let data = await readFile(file);
@@ -959,7 +976,6 @@ export default {
           })
           throw e
         }
-
       })
       if (ArrayCompare(NewArr, OldArr)) {
         data = xlsx.utils.sheet_to_json(worksheet)
@@ -1059,7 +1075,6 @@ export default {
         message: '请先选择导入文件',
         showClose: true
       })
-
     },
     //财务模块
     handleDJ(value){
@@ -1115,7 +1130,7 @@ export default {
         se_bj: this.banji_id,
       });
     },
-    //用户费用登记
+    //员工费用登记
     handleYHDJ(value){
       this.banji_id = value.id
       this.YHform.detail = [
@@ -1140,21 +1155,25 @@ export default {
       ]
     },
     CwYHSubmit(){
-      this.YHform.detail.forEach(item =>{
-        item.em_pay = parseFloat(item.em_jbCost) + parseFloat(item.em_cxCost) + parseFloat(item.em_dbCost)
-        addEmDetails(item).then(res=>{
-          Message.success({
-            message: '员工费用增加成功',
-            showClose: true
+      this.$refs['YGdynamicForm'].validate(valid =>{
+        if(valid){
+          this.YHform.detail.forEach(item =>{
+            item.em_pay = parseFloat(item.em_jbCost) + parseFloat(item.em_cxCost) + parseFloat(item.em_dbCost)
+            addEmDetails(item).then(res=>{
+              Message.success({
+                message: '员工费用增加成功',
+                showClose: true
+              })
+              this.YHOpen = false
+            }).catch(err=>{
+              console.log(err)
+              Message.error({
+                message: '请输入正确的信息',
+                showClose: true
+              })
+            })
           })
-          this.YHOpen = false
-        }).catch(err=>{
-          console.log(err)
-          Message.error({
-            message: '请输入正确的信息',
-            showClose: true
-          })
-        })
+        }
       })
     },
     //教师费用登记
@@ -1183,20 +1202,24 @@ export default {
       ]
     },
     CwJSSubmit(){
-      this.JSform.detail.forEach(item =>{
-        addSubsidyPayment(item).then(res=>{
-          Message.success({
-            message: '教师费用登记成功',
-            showClose: true
+      this.$refs['JSdynamicForm'].validate(valid =>{
+        if(valid){
+          this.JSform.detail.forEach(item =>{
+            addSubsidyPayment(item).then(res=>{
+              Message.success({
+                message: '教师费用登记成功',
+                showClose: true
+              })
+              this.JSOpen = false
+            }).catch(err=>{
+              console.log(err)
+              Message.error({
+                message: '请输入正确的信息',
+                showClose: true
+              })
+            })
           })
-          this.JSOpen = false
-        }).catch(err=>{
-          console.log(err)
-          Message.error({
-            message: '请输入正确的信息',
-            showClose: true
-          })
-        })
+        }
       })
     },
     //开班费用补贴
@@ -1224,17 +1247,21 @@ export default {
       ]
     },
     CwKBSubmit(){
-      this.KBform.detail.forEach(item =>{
-        addPayDetails(item).then(res=>{
-          Message.success({
-            message: '开班费用登记成功',
-            showClose: true
+      this.$refs['KBdynamicForm'].validate(valid=>{
+        if(valid){
+          this.KBform.detail.forEach(item =>{
+            addPayDetails(item).then(res=>{
+              Message.success({
+                message: '开班费用登记成功',
+                showClose: true
+              })
+              this.KBOpen = false
+            }).catch(err=>{
+              console.log(err)
+              Message.error('请输入正确的信息')
+            })
           })
-          this.KBOpen = false
-        }).catch(err=>{
-          console.log(err)
-          Message.error('请输入正确的信息')
-        })
+        }
       })
     },
     //获取财务数据
@@ -1335,10 +1362,16 @@ export default {
                 // console.log(parseFloat(that.data.teCost))
                 // console.log(parseFloat(that.data.empCount))
                 // console.log(parseFloat(that.data.costCount))
-                loading.close()
               })
             })
           })
+        })
+      }).then(()=>{
+        BStuCount(row.id).then(res =>{
+          // console.log(res)
+          // console.log(res.data.student_count.STU_sf_id__count)
+          this.data.count = res.data.student_count.STU_sf_id__count
+          loading.close()
         })
       })
     },
@@ -1355,9 +1388,9 @@ export default {
             product: res.data.tp_projectName,
             banName: this.banji.BClass_name,
             address: this.banji.BClass_address,
-            count: '',
-            day: '',
-            teName: this.banji.BLecturer,
+            count: this.data.count,
+            day: Math.floor(Math.abs(Date.parse(this.banji.BCEndTime) - Date.parse(this.banji.BCStartTime))/ (24 * 3600 * 1000)),
+            teName: this.banji.BLecturer.split(':')[1],
             BanZR: this.banji.BHead_teacher,
             startYear: this.banji.BCStartTime.split('-')[0],
             startmonth: this.banji.BCStartTime.split('-')[1],
@@ -1366,7 +1399,7 @@ export default {
             endMonth: this.banji.BCEndTime.split('-')[1],
             endDay: this.banji.BCEndTime.split('-')[2],
             preIncome: parseFloat(this.banji.BGov_fee),
-            profit: this.settle.profit,
+            profit: (((parseFloat(this.banji.BGov_fee) - this.data.costCount.toFixed(2))/parseFloat(this.banji.BGov_fee))*100).toFixed(1),
             consumables: this.settle.consumables,
             material: this.settle.material,
             field: this.settle.field,

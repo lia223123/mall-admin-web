@@ -33,7 +33,8 @@
     "vue-router": "^3.0.1",
     "vue-uuid": "^2.0.2",
     "vuex": "^3.0.1",
-    "xlsx": "^0.16.9"
+    "xlsx": "^0.16.9",
+    "xlsx-style": "^0.8.13"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

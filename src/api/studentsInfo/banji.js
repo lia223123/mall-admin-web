@@ -38,3 +38,10 @@ export function deleteBanJi(id){
     method: 'delete'
   })
 }
+//查询班级下学员信息
+export function BStuCount(id){
+  return request({
+    url: '/studentsinfo/v1/BStuCount/' + id +'/',
+    method: 'get'
+  })
+}
