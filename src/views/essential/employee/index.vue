@@ -161,13 +161,13 @@ export default {
       },
       //部门选择
       dept: [
+        {name: '财务'},
+        {name: '档案部'},
+        {name: '标书办'},
         {name: '培训一部'},
         {name: '培训二部'},
         {name: '培训三部'},
         {name: '培训四部'},
-        {name: '培训五部'},
-        {name: '财务'},
-        {name: '标书办'},
       ],
       roles: []
     }
@@ -179,9 +179,9 @@ export default {
     }).then(res =>{
       this.roles = res.data.results
     })
-    buildMenu().then(res=>{
-      console.log(res)
-    })
+    // buildMenu().then(res=>{
+    //   console.log(res)
+    // })
   },
   methods:{
     getList(){

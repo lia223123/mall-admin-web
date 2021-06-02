@@ -1,16 +1,34 @@
 <template>
   <div class="app-container">
-    <div style="margin: 15px 0; width: 700px;display: flex">
-      <el-input placeholder="请输入查询内容" v-model="find" class="input-with-select">
-        <el-select v-model="select" slot="prepend" placeholder="请选择" style="width: 120px">
-          <el-option v-for="item in this.query" :label="item.name" :value="item.id" :key="item.id"/>
-        </el-select>
-        <el-button slot="append" icon="el-icon-search" @click="handleFind"></el-button>
-      </el-input>
-      <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      <el-button icon="el-icon-export" size="mini" @click="stuInfo_export" type="primary">学员信息模板导出</el-button>
+    <div style="display: flex">
+      <div style="margin: 15px 0; width: 700px;display: flex">
+        <el-input placeholder="请输入查询内容" v-model="find" class="input-with-select">
+          <el-select v-model="select" slot="prepend" placeholder="请选择" style="width: 120px">
+            <el-option v-for="item in this.query" :label="item.name" :value="item.id" :key="item.id"/>
+          </el-select>
+          <el-button slot="append" icon="el-icon-search" @click="handleFind"></el-button>
+        </el-input>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button icon="el-icon-export" size="mini" @click="stuInfo_export" type="primary">学员信息模板导出</el-button>
+      </div>
+      <span style="font-size: 10px;color: red;margin-left: 10px">
+        学员信息模板填写格式：<br>
+        学员类型（贫困家庭子女、贫困劳动力、失业人员、城乡未继续升学初高中毕业生、农村转移就业劳动力、转岗职工、残疾人、退役军人、无）<br>
+        保险类型（养老、医疗、失业、工伤、生育、无）<br>
+        是否为建档立卡户（是、否）<br>
+        健康状态（健康、不健康）<br>
+      </span>
     </div>
-    <el-table v-loading="loading" :data="dataList" border >
+    <el-row>
+      <el-col>
+        <el-button @click="ApplyGO">申请政府补贴</el-button>
+      </el-col>
+    </el-row>
+    <el-table v-loading="loading" :data="dataList" border @selection-change="handleSelectionChange">
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
 <!--      <el-table-column label="id" align="center" prop="id"/>-->
       <el-table-column label="班级编号" align="center" prop="BClass_code">
         <template slot-scope="scope">
@@ -159,6 +177,7 @@
 <!--财务详情-->
     <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1200px" append-to-body :before-close="handleClose">
       <div v-html="html1" style="text-align: center; margin: 0 200px"></div>
+
       <div style="margin-left: 700px;margin-top: 20px">
         <el-button
           icon="el-icon-wallet"
@@ -201,7 +220,7 @@
         </el-form>
     </el-dialog>
     <el-dialog title="员工费用登记" :visible.sync="YHOpen" width="1000px" append-to-body :before-close="handleClose">
-        <el-form :model="YHform" ref="YGdynamicForm" label-width="60px" class="demo-dynamic" :rules="EMRule">
+        <el-form :model="YHform" ref="YGdynamicForm" label-width="60px" class="demo-dynamic">
           <div v-for="(domain, index) in YHform.detail" :key="domain.key">
             <el-row>
               <el-col :span="5">
@@ -252,7 +271,7 @@
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="摘要" label-width="80px" prop="em_text">
+                <el-form-item label="摘要" label-width="80px" :prop="'detail.'+ index + '.em_text'" :rules="{ required: true, message: '摘要不能为空', trigger: 'blur'}">
                   <el-input type="textarea" placeholder="请输入摘要" v-model="domain.em_text"/>
                 </el-form-item>
               </el-col>
@@ -267,13 +286,13 @@
         </el-form>
     </el-dialog>
     <el-dialog title="教师费用登记" :visible.sync="JSOpen" width="1000px" append-to-body :before-close="handleClose">
-      <el-form :model="JSform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic" :rules="TERule">
+      <el-form :model="JSform" ref="JSdynamicForm" label-width="60px" class="demo-dynamic">
         <div v-for="(domain, index) in JSform.detail" :key="domain.key">
           <el-row>
             <el-col :span="5">
               <el-form-item label="姓名">
-                <el-select placeholder="请选择教师" v-model="domain.te_name" @change="teaCh(index)">
-                  <el-option :label="teather[1]" :value="teather[1]"/>
+                <el-select placeholder="请选择教师" v-model="domain.te_name" @change="teaCh">
+                  <el-option v-for="item in teather" :key="item" :label="item.split(':')[1]" :value="item.split(':')[0] + ',' + index"/>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -300,8 +319,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="摘要" label-width="60px" prop="te_text">
-                <el-input type="textarea" placeholder="请输入摘要" v-model="domain.te_text"/>
+              <el-form-item label="摘要" label-width="60px" :prop="'detail.'+ index + '.te_text'" :rules="{ required: true, message: '摘要不能为空', trigger: 'blur'}">
+                <el-input v-model="domain.te_text" type="textarea" placeholder="请输入摘要" />
               </el-form-item>
             </el-col>
             <el-col :span="6">
@@ -323,7 +342,7 @@
       </el-form>
     </el-dialog>
     <el-dialog title="开班费用登记" :visible.sync="KBOpen" width="1000px" append-to-body :before-close="handleClose">
-      <el-form :model="KBform" ref="KBdynamicForm" label-width="60px" class="demo-dynamic" :rules="ADRule">
+      <el-form :model="KBform" ref="KBdynamicForm" label-width="60px" class="demo-dynamic">
         <div v-for="(domain, index) in KBform.detail" :key="domain.key">
           <el-row>
             <el-col :span="5">
@@ -354,7 +373,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="摘要" label-width="60px" prop="ad_text">
+              <el-form-item label="摘要" label-width="60px" :prop="'detail.'+ index + '.ad_text'" :rules="{ required: true, message: '摘要不能为空', trigger: 'blur'}">
                 <el-input type="textarea" placeholder="请输入摘要" v-model="domain.ad_text"/>
               </el-form-item>
             </el-col>
@@ -379,6 +398,54 @@
           <el-button @click="addDomainKB">新增费用行</el-button>
           <el-button @click="resetKBForm" type="warning">重置</el-button>
         </el-form-item>
+      </el-form>
+    </el-dialog>
+<!--政府补贴-->
+    <el-dialog title="申请政府补贴" :visible.sync="ZFOpen" width="1000px" append-to-body :before-close="handleClose">
+      <el-form :model="ZFBT" ref="ZFdynamicForm" label-width="100px" class="demo-dynamic">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="应申请金额" prop="cd_amm_count">
+              <el-input v-model="ZFBT.cd_amm_count" disabled/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="实际申请金额" prop="cd_actual_count">
+              <el-input v-model="ZFBT.cd_actual_count" disabled/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="申请人" prop="cd_amm_count">
+              <el-input v-model="ZFBT.cd_name" disabled/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="发票类型" prop="cd_invoice_type">
+              <el-select v-model="ZFBT.cd_invoice_type" placeholder="请选择发票类型">
+                <el-option v-for="item in cdType" :label="item.name" :key="item.value" :value="item.value"/>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="9">
+            <el-form-item label="发票编号" prop="cd_invoice_id">
+              <el-input v-model="ZFBT.cd_invoice_id" placeholder="请输入发票编号"/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="9">
+            <el-form-item label="发票号" prop="cd_invoice_code">
+              <el-input v-model="ZFBT.cd_invoice_code" placeholder="请输入发票号"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <div v-for="(domain, index) in selectList" :key="domain.id">
+          <el-row>
+            <el-col>
+
+            </el-col>
+          </el-row>
+        </div>
       </el-form>
     </el-dialog>
   </div>
@@ -574,22 +641,19 @@ export default {
       //判断学生上传状态
       ad_status: 0,
       teather: [],
-      //校验
-      ADRule: {
-        ad_text:[
-          {required: true, message: '请输入摘要', trigger: 'blur'}
-        ]
+      //选中数据
+      selectList: [],
+      //政府补贴表单
+      ZFOpen: false,
+      ZFBT: {
+        cd_actual_count: 0,
+        cd_amm_count: 0,
       },
-      TERule:{
-        te_text:[
-          {required: true, message: '请输入摘要', trigger: 'blur'}
-        ]
-      },
-      EMRule:{
-        em_text:[
-          {required: true, message: '请输入摘要', trigger: 'blur'}
-        ]
-      }
+      //发票类型
+      cdType: [
+        {name: '专票',value: 1},
+        {name: '普票',value: 2},
+      ]
     }
   },
   beforeCreate() {
@@ -745,11 +809,6 @@ export default {
             message: '没有班级删除权限'
           });
         })
-      }).catch(() =>{
-        this.$message({
-          message: "已取消",
-          type: 'warning',
-        });
       })
     },
     //取消按钮
@@ -762,12 +821,7 @@ export default {
         // this.resetFW(this.form)
         this.reset()
         this.open = false
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消'
-        });
-      });
+      })
     },
     //确定按钮
     submitForm(){
@@ -801,12 +855,7 @@ export default {
         this.reset()
         this.$refs.upload.clearFiles()
         this.importInfo = []
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消'
-        });
-      });
+      })
     },
     //查询
     handleFind(){
@@ -1180,7 +1229,8 @@ export default {
     handleJSDJ(value){
       this.JSOpen = true
       this.banji_id = value.id
-      this.teather = value.BLecturer.split(':')
+      this.teather = value.BLecturer.split(',')
+      console.log(this.teather)
       this.JSform.detail = [
         {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
       ]
@@ -1399,7 +1449,7 @@ export default {
             endMonth: this.banji.BCEndTime.split('-')[1],
             endDay: this.banji.BCEndTime.split('-')[2],
             preIncome: parseFloat(this.banji.BGov_fee),
-            profit: (((parseFloat(this.banji.BGov_fee) - this.data.costCount.toFixed(2))/parseFloat(this.banji.BGov_fee))*100).toFixed(1),
+            profit: (((parseFloat(this.banji.BGov_fee) - (parseFloat(this.data.costCount.toFixed(2)) + parseFloat(this.banji.BManagement_fee) + parseFloat(this.banji.BLiving_fee)))/parseFloat(this.banji.BGov_fee) )*100).toFixed(1),
             consumables: this.settle.consumables,
             material: this.settle.material,
             field: this.settle.field,
@@ -1451,16 +1501,27 @@ export default {
     //教师改变的函数
     teaCh(index){
       let o = {
-        LEid: this.teather[0]
+        LEid: index.split(',')[0]
       }
       listLecturers(o).then(res=>{
-        this.JSform.detail[index].te_name = res.data.results[0].LE_name
-        this.JSform.detail[index].te_cid = res.data.results[0].LE_cid
-        this.JSform.detail[index].te_phone = res.data.results[0].LE_phone
-        this.JSform.detail[index].te_bank = res.data.results[0].LE_bankName
-        this.JSform.detail[index].te_bankCode = res.data.results[0].LE_bankCode
-        this.JSform.detail[index].te_pay = 0
-        this.JSform.detail[index].key = Date.now()
+        this.JSform.detail[index.split(',')[1]].te_name = res.data.results[0].LE_name
+        this.JSform.detail[index.split(',')[1]].te_cid = res.data.results[0].LE_cid
+        this.JSform.detail[index.split(',')[1]].te_phone = res.data.results[0].LE_phone
+        this.JSform.detail[index.split(',')[1]].te_bank = res.data.results[0].LE_bankName
+        this.JSform.detail[index.split(',')[1]].te_bankCode = res.data.results[0].LE_bankCode
+        this.JSform.detail[index.split(',')[1]].te_pay = 0
+        this.JSform.detail[index.split(',')[1]].key = Date.now()
+      })
+    },
+    //申请政府补贴
+    ApplyGO(){
+      this.ZFOpen = true
+    },
+    handleSelectionChange(val){
+      this.selectList = val
+      this.selectList.forEach(item =>{
+        this.ZFBT.cd_actual_count = parseFloat(item.BGov_fee) + parseFloat(this.ZFBT.cd_actual_count)
+        this.ZFBT.cd_amm_count = this.ZFBT.cd_actual_count
       })
     }
   }

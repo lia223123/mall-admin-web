@@ -111,7 +111,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="讲课老师" prop="BLecturer">
-          <el-select v-model="form.BLecturer" filterable placeholder="请输入讲课">
+          <el-select v-model="form.BLecturer" filterable multiple placeholder="请输入讲课">
             <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name"/>
           </el-select>
         </el-form-item>
@@ -120,11 +120,11 @@
         </el-form-item>
       </el-form>
       <el-form ref="form" :model="form" :rules="rules"  v-if="active === 2"  label-width="150px">
-        <el-form-item label="管理费用" prop="BManagement_fee">
-          <el-input v-model="form.BManagement_fee" placeholder="请输入管理费用"/>
+        <el-form-item label="班主任工资总额" prop="BManagement_fee">
+          <el-input v-model="form.BManagement_fee" placeholder="请输入班主任工资总额"/>
         </el-form-item>
-        <el-form-item label="食宿标准" prop="BLiving_fee">
-          <el-input v-model="form.BLiving_fee" placeholder="请输入食宿标准"/>
+        <el-form-item label="助教工资总额" prop="BLiving_fee">
+          <el-input v-model="form.BLiving_fee" placeholder="请输入助教工资总额"/>
         </el-form-item>
         <el-form-item label="政府补贴费用" prop="BGov_fee">
           <el-input v-model="form.BGov_fee" placeholder="请输入政府补贴费用"/>
@@ -168,7 +168,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog  title="新增中标项目" :visible.sync="ProOpen" width="800px" append-to-body :before-close="handleClose">
+    <el-dialog  title="新增投标项目" :visible.sync="ProOpen" width="800px" append-to-body :before-close="handleClose">
       <el-form ref="Proform" :model="Proform" :rules="ProRules">
         <el-row>
           <el-col :span="12">
@@ -287,7 +287,10 @@ export default {
       dataList: [],
       //
       find: '',
-      form: {},
+      form: {
+        BManagement_fee: 4000,
+        BLiving_fee: 4000,
+      },
       Proform: {},
       active: 1,
       //预览路径
@@ -442,7 +445,7 @@ export default {
         {name: '培训二部'},
         {name: '培训三部'},
         {name: '培训四部'},
-        {name: '培训五部'},
+        {name: '档案部'},
       ],
     }
   },
@@ -483,8 +486,8 @@ export default {
         BLecturer: undefined,
         BStaff: undefined,
         BSCount: undefined,
-        BManagement_fee: undefined,
-        BLiving_fee: undefined,
+        BManagement_fee: 4000,
+        BLiving_fee: 4000,
         BGov_fee: undefined,
         BCommission: undefined,
         BClass_pay: undefined,
@@ -536,7 +539,7 @@ export default {
           type: 'warning'
         }).then(()=>{
           this.form = {
-            BClass_code: row.tp_projectCode + '0000',
+            BClass_code: row.tp_projectCode + '投标班级',
             BClass_name: row.tp_projectName,
             BR_code: 0,
             BCStartTime: formatDate(new Date(Date.now()) ,'yyyy-MM-dd'),
@@ -547,7 +550,7 @@ export default {
             BClass_type: 2,
             BLev: 0,
             BOt_name: 0,
-            BLecturer: 0,
+            BLecturer: '',
             BStaff: 0,
             BSCount: 0,
             BManagement_fee: 0,
@@ -626,6 +629,7 @@ export default {
     submitForm(){
       this.$refs["form"].validate(valid => {
         if(valid){
+            this.form.BLecturer = this.form.BLecturer.toString()
           addBanJi(this.form).then(response => {
             this.$message({
               message: "新增成功",

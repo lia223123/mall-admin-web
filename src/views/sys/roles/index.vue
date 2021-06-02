@@ -274,7 +274,7 @@ export default {
           name: this.searchForm.name,
         }
       }).then(res => {
-        console.log(res)
+        // console.log(res)
         this.tableData = res.data.results
       })
     },

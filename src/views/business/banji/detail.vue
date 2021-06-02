@@ -57,11 +57,11 @@
                 <div class="pull-right">{{ Class.BLecturer }}</div>
               </li>
               <li class="list-group-item">
-                管理费用
+                班主任工资
                 <div class="pull-right">{{ Class.BManagement_fee }}</div>
               </li>
               <li class="list-group-item">
-                食宿标准
+                助教工资
                 <div class="pull-right">{{ Class.BLiving_fee }}</div>
               </li>
               <li class="list-group-item">
@@ -214,18 +214,18 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item label="讲课老师" prop="BLecturer">
-                  <el-select v-model="Class.BLecturer" filterable placeholder="请输入讲课" :disabled="isDes">
+                  <el-select v-model="Class.BLecturer" filterable multiple placeholder="请输入讲课" :disabled="isDes">
                     <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name" />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="工作人员" prop="BStaff">
                   <el-input v-model="Class.BStaff" placeholder="请输入工作人员" :disabled="isDes"/>
                 </el-form-item>
-                <el-form-item label="管理费用" prop="BManagement_fee">
-                  <el-input v-model="Class.BManagement_fee" placeholder="请输入管理费用" :disabled="isDes"/>
+                <el-form-item label="班主任工资总额" prop="BManagement_fee">
+                  <el-input v-model="Class.BManagement_fee" placeholder="请输入班主任工资总额" :disabled="isDes"/>
                 </el-form-item>
-                <el-form-item label="食宿标准" prop="BLiving_fee">
-                  <el-input v-model="Class.BLiving_fee" placeholder="请输入食宿标准" :disabled="isDes"/>
+                <el-form-item label="助教工资总额" prop="BLiving_fee">
+                  <el-input v-model="Class.BLiving_fee" placeholder="请输入助教工资总额" :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="政府补贴费用" prop="BGov_fee">
                   <el-input v-model="Class.BGov_fee" placeholder="请输入政府补贴费用" :disabled="isDes"/>
@@ -424,6 +424,7 @@ export default {
       getBanJi(id).then(res =>{
         this.Class = res.data
         this.Class.BClass_name = this.Class.BClass_name.toString()
+        this.Class.BLecturer = this.Class.BLecturer.split(',')
         getTenderProject(res.data.BT).then(res =>{
           this.tenPro = res.data
         })
@@ -496,6 +497,7 @@ export default {
     },
     //保存
     submit(){
+      this.Class.BLecturer = this.Class.BLecturer.toString()
       editBanJi(this.Class).then(() =>{
         this.isDes = true
         this.getClass(this.id)
