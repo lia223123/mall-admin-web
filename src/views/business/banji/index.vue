@@ -21,10 +21,10 @@
     </div>
     <el-row>
       <el-col>
-        <el-button @click="ApplyGO">申请政府补贴</el-button>
+        <el-button @click="ApplyGO" type="primary">申请政府补贴</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" :data="dataList" border @selection-change="handleSelectionChange">
+    <el-table ref="BanTable" v-loading="loading" :data="dataList" border @selection-change="handleSelectionChange">
       <el-table-column
         type="selection"
         width="55">
@@ -170,8 +170,8 @@
         <el-table-column label="专业" align="center" prop="STU_major"/>
         <el-table-column label="保险类型" align="center" prop="STU_insureType"/>
         <el-table-column label="健康状态" align="center" prop="STU_health_status"/>
-<!--        <el-table-column label="招生老师姓名" align="center" prop="AD_name"/>-->
-<!--        <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>-->
+        <el-table-column label="招生老师姓名" align="center" prop="AD_name"/>
+        <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>
       </el-table>
     </el-dialog>
 <!--财务详情-->
@@ -402,7 +402,12 @@
     </el-dialog>
 <!--政府补贴-->
     <el-dialog title="申请政府补贴" :visible.sync="ZFOpen" width="1000px" append-to-body :before-close="handleClose">
-      <el-form :model="ZFBT" ref="ZFdynamicForm" label-width="100px" class="demo-dynamic">
+      <el-form :model="ZFBT" ref="ZFdynamicForm" label-width="100px" class="demo-dynamic" :rules="ZFRules">
+        <el-row>
+          <el-form-item label="费用申请表编号" label-width="110px">
+            <el-input v-model="ZFBT.cd_code" disabled/>
+          </el-form-item>
+        </el-row>
         <el-row>
           <el-col :span="8">
             <el-form-item label="应申请金额" prop="cd_amm_count">
@@ -439,14 +444,32 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <div v-for="(domain, index) in selectList" :key="domain.id">
+      </el-form>
+      <el-form :model="selectList" label-width="100px">
+        <div v-for="(domain, index) in selectList.detail" :key="domain.id">
           <el-row>
-            <el-col>
-
+            <el-col :span="8">
+              <el-form-item label="班级编码">
+                <el-input v-model="domain.BClass_code" :value="domain.BClass_code" disabled/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="班级名称">
+                <el-input v-model="domain.BClass_name" :value="domain.BClass_name" disabled/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="政府补贴金额">
+                <el-input v-model="domain.BGov_fee" :value="domain.BGov_fee" disabled/>
+              </el-form-item>
             </el-col>
           </el-row>
         </div>
       </el-form>
+      <div class="el-dialog__footer">
+        <el-button type="primary" @click="FinaSubmit">确定</el-button>
+        <el-button @click="resetFina">取消</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -459,7 +482,7 @@ import {
   formatSex,
   Fstu_educations, Fstu_personnel,
   isNot,
-  level,
+  level, parseTime,
   readFile,
   stuCharacter
 } from "../../../utils";
@@ -480,6 +503,11 @@ import {saveAs} from "file-saver"
 import {addSeCount} from "../../../api/finance/seCount";
 import {listAdTeacher} from "../../../api/studentsInfo/adTeacher";
 import {getTenderProject} from "../../../api/tenderproject/tenderProject";
+import {addCostDetail} from "../../../api/finance/costDetail";
+import {parseDate} from "echarts/src/util/number";
+import {formatDate} from "../../../utils/date";
+import {addCostDetailing} from "../../../api/finance/costDetailing";
+import {addRelationship} from "../../../api/studentsInfo/relationship";
 
 let that
 export default {
@@ -642,18 +670,33 @@ export default {
       ad_status: 0,
       teather: [],
       //选中数据
-      selectList: [],
+      selectList: {
+        detail: []
+      },
       //政府补贴表单
       ZFOpen: false,
       ZFBT: {
         cd_actual_count: 0,
         cd_amm_count: 0,
       },
+      ZFRules: {
+        cd_invoice_type: [
+          {required: true, message: '请选择发票类型', trigger: 'blur'}
+        ],
+        cd_invoice_id: [
+          {required: true, message: '请输入发票编号', trigger: 'blur'}
+        ],
+        cd_invoice_code: [
+          {required: true, message: '请选择发票号', trigger: 'blur'}
+        ],
+      },
       //发票类型
       cdType: [
         {name: '专票',value: 1},
         {name: '普票',value: 2},
-      ]
+      ],
+      //招生老师list
+      ADList: {}
     }
   },
   beforeCreate() {
@@ -661,6 +704,9 @@ export default {
   },
   created() {
     this.getList()
+    listAdTeacher().then(res =>{
+      this.ADList = res.data.results
+    })
     listLecturers().then(res =>{
       this.lecturers = res.data.results
     }).catch(err =>{
@@ -669,7 +715,6 @@ export default {
         message: '没有讲师查询权限'
       });
     })
-
   },
   methods:{
     getList(){
@@ -744,7 +789,7 @@ export default {
           travel: 0,
           costCount: 0,
           empCount: 0,
-      }
+      };
       this.SeCount = {
           sc_part: '',
           sc_bName: '',
@@ -765,11 +810,18 @@ export default {
           sc_jb: '',
           sc_cxc: '',
           sc_count: '',
-      },
-      this.emp = {}
-      this.terd = {}
-      this.adrd = {}
-      this.selectionList = []
+      };
+      this.emp = {};
+      this.terd = {};
+      this.adrd = {};
+      this.selectionList = {
+        detail: []
+      };
+      this.ZFBT = {
+        cd_actual_count: 0,
+        cd_amm_count: 0,
+      };
+      this.$refs['BanTable'].clearSelection();
     },
     //查询参数重置
     resetQuery(){
@@ -871,7 +923,9 @@ export default {
         })
       }else {
         let json = {}
-        json['BDepartment'] = this.$store.state.user.department
+        if(this.$store.state.user.department !== '财务'){
+          json['BDepartment'] = this.$store.state.user.department
+        }
         json[this.select] = this.find
         listBanJi(json).then(res =>{
           this.dataList = res.data.results
@@ -966,8 +1020,8 @@ export default {
             '专业': null,
             '保险类型': null,
             '健康状态': null,
-            // '招生老师姓名': null,
-            // '招生老师身份证号': null,
+            '招生老师姓名': null,
+            '招生老师身份证号': null,
           }
         ]
         let sheet = xlsx.utils.json_to_sheet(arr),
@@ -986,7 +1040,7 @@ export default {
       let file = ev.raw
       if (!file) return;
       //判断excel的标题
-      let A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'/*, 'Q', 'R'*/]
+      let A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R']
       let NewArr = []
       //判断字段
       let OldArr = [
@@ -1007,8 +1061,8 @@ export default {
         '专业',
         '保险类型',
         '健康状态',
-        // '招生老师姓名',
-        // '招生老师身份证号',
+        '招生老师姓名',
+        '招生老师身份证号',
       ]
       //读取file的数据
       let data = await readFile(file);
@@ -1060,7 +1114,10 @@ export default {
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         })
+        let stus = []
+        this.ad_status = 0
         this.importInfo.forEach(item =>{
+          let stu = {}
           if(typeof(item.STU_gender) === 'string'){
             item.STU_education = Fstu_educations(item.STU_education)
             item.STU_insureType = FInsureType(item.STU_insureType)
@@ -1069,46 +1126,48 @@ export default {
             item.STU_filed_account = FisNot(item.STU_filed_account)
           }
           item.STUBj = this.banji_id
+          if(item.AD_cid !== "") {
+            for(let obj in this.ADList){
+              if(this.ADList[obj].AD_cid === item.AD_cid){
+                stu.AD_id = this.ADList[obj].id
+                this.ad_status = 0
+                stus.push(stu)
+              }
+              else {
+                Message.warning({
+                  message: item.AD_name + '在系统库中不存在，请先录入该老师信息',
+                  showClose: true
+                })
+                this.ad_status = 1
+                return
+              }
+            }
+          }
+          stu.STU_sf_id = item.STU_sf_id
+          stu.STU_name= item.STU_name
+          stu.STU_gender= item.STU_gender
+          stu.STU_phone= item.STU_phone
+          stu.BJ_id=this.banji_id
           delete item.AD_cid
           delete item.AD_name
-          // if(item.AD_cid !== "") {
-          //   let o = {
-          //     AD_cid: item.AD_cid
-          //   }
-          //   listAdTeacher(o).then(res => {
-          //     if (res.data.results.length < 1) {
-          //       Message.warning({
-          //         message: item.AD_name + "未在系统录入，请录入后再导入学员信息",
-          //         showClose: true
-          //       })
-          //       item.StuAD = []
-          //       that.ad_status = 1
-          //     } else {
-          //       item.StuAD = [res.data.results[0].id]
-          //     }
-          //   }).then(()=>{
-          //     delete item.AD_cid
-          //     delete item.AD_name
-          //   })
-          // }else {
-          //   item.StuAD = []
-          //   delete item.AD_cid
-          //   delete item.AD_name
-          // }
         })
         //可能修改
-        setTimeout(function () {
           if(that.ad_status === 0 ){
+            addRelationship(stus).then(res =>{
+              Message.success({
+                message: '班级学员导入成功',
+                showClose: true
+              })
+            })
             addStudent(that.importInfo).then(res=>{
               loading.close()
               that.ImOpen = false
               that.importInfo = []
               Message.success({
-                message: '导入成功',
+                message: '学员库导入成功',
                 showClose: true
               })
             }).catch(err=>{
-              console.log(err)
               Message.error({
                 message: err,
                 showClose: true
@@ -1117,9 +1176,11 @@ export default {
             })
           }else {
             loading.close()
-            Message.error('导入失败')
+            this.reset()
+            this.$refs.upload.clearFiles()
+            this.importInfo = []
+            this.ImOpen = false
           }
-        },3000)
       }else Message.warning({
         message: '请先选择导入文件',
         showClose: true
@@ -1440,7 +1501,7 @@ export default {
             address: this.banji.BClass_address,
             count: this.data.count,
             day: Math.floor(Math.abs(Date.parse(this.banji.BCEndTime) - Date.parse(this.banji.BCStartTime))/ (24 * 3600 * 1000)),
-            teName: this.banji.BLecturer.split(':')[1],
+            teName: this.banji.BLecturer.split(','),
             BanZR: this.banji.BHead_teacher,
             startYear: this.banji.BCStartTime.split('-')[0],
             startmonth: this.banji.BCStartTime.split('-')[1],
@@ -1515,14 +1576,67 @@ export default {
     },
     //申请政府补贴
     ApplyGO(){
-      this.ZFOpen = true
+      if(this.selectList.detail.length < 1){
+        Message.warning('请选择申报班级')
+      }else {
+        this.ZFOpen = true
+        this.ZFBT.cd_name = this.$store.state.user.emName
+        this.ZFBT.cd_code = Date.now() + this.$store.state.user.name
+      }
     },
     handleSelectionChange(val){
-      this.selectList = val
-      this.selectList.forEach(item =>{
+      this.selectList.detail = val
+      this.ZFBT.cd_actual_count = 0
+      this.selectList.detail.forEach(item =>{
+        if(item.Bis_fee_applied === 1){
+          Message.warning(item.BClass_name + '已经进行过政府补贴申请，请重新选择')
+          this.reset()
+          return
+        }
         this.ZFBT.cd_actual_count = parseFloat(item.BGov_fee) + parseFloat(this.ZFBT.cd_actual_count)
         this.ZFBT.cd_amm_count = this.ZFBT.cd_actual_count
+        this.ZFBT.cd_actual_amount = this.ZFBT.cd_actual_count
       })
+    },
+    FinaSubmit(){
+      this.$refs['ZFdynamicForm'].validate(valid =>{
+        if(valid){
+          this.ZFBT.cd_applicationDate = formatDate(new Date(Date.now()), 'yyyy-MM-dd')
+          addCostDetail(this.ZFBT).then(res =>{
+            let o = []
+            this.selectList.detail.forEach(item => {
+              let s = {}
+              s.de_bjCode = item.BClass_code
+              s.de_BClass_name = item.BClass_name
+              s.de_BGov_fee = item.BGov_fee
+              s.de = JSON.parse(res.data).id
+              o.push(s)
+            })
+            addCostDetailing(o).then(res =>{
+              this.selectList.detail.forEach(item =>{
+                item.Bis_fee_applied = 1
+                item.Bis_closed = 1
+                editBanJi(item).then(res =>{
+                  Message.success('政府补贴申请成功')
+                  this.reset()
+                  this.getList()
+                  this.ZFOpen = false
+                }).catch((err)=>{
+                  Message.error('申请失败'+ err)
+                })
+              })
+            }).catch((err)=>{
+              Message.error('申请失败'+ err)
+            })
+          }).catch((err)=>{
+            Message.error('申请失败'+ err)
+          })
+        }
+      })
+    },
+    resetFina(){
+      this.ZFOpen = false
+      this.reset()
     }
   }
 }

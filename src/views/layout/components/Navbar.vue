@@ -2,7 +2,7 @@
   <el-menu class="navbar" mode="horizontal">
     <hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
     <breadcrumb></breadcrumb>
-    <el-tag style="float: right;margin-right: 120px; margin-top: 10px">登陆用户：{{this.$store.state.user.name}}</el-tag>
+    <el-tag style="float: right;margin-right: 120px; margin-top: 10px">登陆用户：{{this.$store.state.user.emName}}</el-tag>
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
         <img class="user-avatar" src="@/assets/images/logo2.png">

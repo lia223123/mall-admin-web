@@ -210,12 +210,12 @@
                 </el-form-item>
                 <el-form-item label="证书等级" prop="BLev">
                   <el-select v-model="Class.BLev" placeholder="请选择证书等级" :disabled="isDes">
-                    <el-option v-for="item in this.level" :value="item.value" :label="item.name" :key="item.value" />
+                    <el-option v-for="item in level" :value="item.value" :label="item.name" :key="item.value" />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="讲课老师" prop="BLecturer">
                   <el-select v-model="Class.BLecturer" filterable multiple placeholder="请输入讲课" :disabled="isDes">
-                    <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name" />
+                    <el-option v-for="item in lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name" />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="工作人员" prop="BStaff">
@@ -249,12 +249,12 @@
                   <el-input v-model="Class.Bco_organizer_commission" placeholder="请输入合办单位分成标准" :disabled="isDes"/>
                 </el-form-item>
                 <el-form-item label="是否已申请政府补贴" prop="Bis_fee_applied">
-                  <el-select placeholder="请选择" v-model="Class.Bis_fee_applied" :disabled="isDes">
+                  <el-select placeholder="请选择" v-model="Class.Bis_fee_applied" disabled>
                     <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value" />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="费用是否到账" prop="Bis_closed">
-                  <el-select placeholder="请选择" v-model="Class.Bis_closed" :disabled="isDes">
+                  <el-select placeholder="请选择" v-model="Class.Bis_closed" disabled>
                     <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
                   </el-select>
                 </el-form-item>

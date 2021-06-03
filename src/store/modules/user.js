@@ -6,6 +6,7 @@ import {getUserPerms} from "../../api/login";
 const user = {
   state: {
     token: getToken(),
+    emName: '',
     name: '',
     avatar: '',
     roles: [],
@@ -16,6 +17,9 @@ const user = {
   mutations: {
     SET_TOKEN: (state, token) => {
       state.token = token
+    },
+    SET_EMNAME: (state, em_name) => {
+      state.emName = em_name
     },
     SET_NAME: (state, name) => {
       state.name = name
@@ -64,6 +68,7 @@ const user = {
             reject('getInfo: roles must be a non-null array !')
           }
           commit('SET_NAME', data.username)
+          commit('SET_EMNAME', data.emName)
           commit('SET_AVATAR', data.avatar)
           commit('SET_ID', data.id)
           commit('SET_DEPARTMENT', data.department)

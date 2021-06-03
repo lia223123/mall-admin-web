@@ -96,7 +96,7 @@
         </el-form-item>
         <el-form-item label="班级性质" prop="BClass_type">
           <el-select v-model="form.BClass_type" placeholder="请选择班级性质">
-            <el-option v-for="item in this.BType" :value="item.value" :label="item.name" :key="item.value"/>
+            <el-option v-for="item in BType" :value="item.value" :label="item.name" :key="item.value"/>
           </el-select>
         </el-form-item>
         <el-form-item label="班主任" prop="BHead_teacher">
@@ -107,12 +107,12 @@
         </el-form-item>
         <el-form-item label="证书等级" prop="BLev">
           <el-select v-model="form.BLev" placeholder="请选择证书等级">
-            <el-option v-for="item in this.level" :value="item.value" :label="item.name" :key="item.value"/>
+            <el-option v-for="item in level" :value="item.value" :label="item.name" :key="item.value"/>
           </el-select>
         </el-form-item>
         <el-form-item label="讲课老师" prop="BLecturer">
           <el-select v-model="form.BLecturer" filterable multiple placeholder="请输入讲课">
-            <el-option v-for="item in this.lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name"/>
+            <el-option v-for="item in lecturers" :key="item.id" :value="item.LEid+':'+item.LE_name" :label="item.LEid+item.LE_name"/>
           </el-select>
         </el-form-item>
         <el-form-item label="工作人员" prop="BStaff">
@@ -148,12 +148,12 @@
           <el-input v-model="form.Bco_organizer_commission" placeholder="请输入合办单位分成标准"/>
         </el-form-item>
         <el-form-item label="是否已申请政府补贴" prop="Bis_fee_applied">
-          <el-select placeholder="请选择" v-model="form.Bis_fee_applied">
+          <el-select placeholder="请选择" v-model="form.Bis_fee_applied" disabled>
             <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
           </el-select>
         </el-form-item>
         <el-form-item label="费用是否到账" prop="Bis_closed">
-          <el-select placeholder="请选择" v-model="form.Bis_closed">
+          <el-select placeholder="请选择" v-model="form.Bis_closed" disabled>
             <el-option v-for="item in isNot" :value="item.value" :label="item.name" :key="item.value"/>
           </el-select>
         </el-form-item>
@@ -290,6 +290,8 @@ export default {
       form: {
         BManagement_fee: 4000,
         BLiving_fee: 4000,
+        Bis_fee_applied: 2,
+        Bis_closed: 2,
       },
       Proform: {},
       active: 1,
@@ -495,8 +497,8 @@ export default {
         BAdmissions_commission: undefined,
         BCo_organizer: undefined,
         Bco_organizer_commission: undefined,
-        Bis_fee_applied: undefined,
-        Bis_closed: undefined,
+        Bis_fee_applied: 2,
+        Bis_closed: 2,
         BClass_photo: undefined,
         BT: undefined,
         B_type: undefined,
