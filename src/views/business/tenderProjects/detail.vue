@@ -243,7 +243,7 @@ export default {
     getClass(id){
       getTenderProject(id).then(res =>{
         this.Class = res.data
-        console.log(this.Class)
+        // console.log(this.Class)
       })
     },
     //下载文件

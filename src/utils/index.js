@@ -57,8 +57,6 @@ export function formatTime(time, option) {
 export function UrlToFile(dataurl,filename){
   let arr = dataurl.split(',');
   let mime = arr[0].match(/:(.*?);/)[1];
-  console.log(arr)
-  console.log(mime)
   let bstr =atob(arr[1]);
   let n = bstr.length;
   let u8arr =new Uint8Array(n);

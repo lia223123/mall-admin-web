@@ -9,14 +9,14 @@
       </el-input>
       <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
     </div>
-    <el-table v-loading="loading" :data="dataList" border>
-      <el-table-column label="id" align="center" prop="id"/>
+    <el-table v-loading="loading" :data="dataList" border show-summary :summary-method="getSummaries">
+<!--      <el-table-column label="id" align="center" prop="id"/>-->
       <el-table-column label="部门" align="center" prop="sc_part"/>
-      <el-table-column label="班级名" align="center" prop="sc_bName" />
-      <el-table-column label="开班时间" align="center" prop="sc_date"/>
+      <el-table-column label="班级名" align="center" prop="sc_bName"/>
+      <el-table-column label="开班时间" align="center" prop="sc_date" sortable width="100px"/>
       <el-table-column label="耗材费" align="center" prop="sc_hc"/>
       <el-table-column label="教材费" align="center" prop="sc_j"/>
-      <el-table-column label="场地费" align="center" prop="sc_c" />
+      <el-table-column label="场地费" align="center" prop="sc_c"/>
       <el-table-column label="会务费" align="center" prop="sc_hw"/>
       <el-table-column label="鉴定费" align="center" prop="sc_d"/>
       <el-table-column label="接待费" align="center" prop="sc_jd"/>
@@ -29,10 +29,12 @@
       <el-table-column label="带班费用" align="center" prop="sc_db"/>
       <el-table-column label="加班费用" align="center" prop="sc_jb"/>
       <el-table-column label="出差费用" align="center" prop="sc_cxc"/>
+      <el-table-column label="利润率" align="center" prop="sc_lrl" sortable>
+        <template slot-scope="scope">
+          <span>{{scope.row.sc_lrl}}%</span>
+        </template>
+      </el-table-column>
       <el-table-column label="总计费用" align="center" prop="sc_count"/>
-<!--      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">-->
-<!--      -->
-<!--      </el-table-column>-->
     </el-table>
 
   </div>
@@ -157,17 +159,64 @@ export default {
         })
       }else {
         let json = {}
-        json['sc_part'] = this.$store.state.user.department
+        if(this.$store.state.user.department !== '财务'){
+          json['sc_part'] = this.$store.state.user.department
+        }
         json[this.select] = this.find
         listSeCount(json).then(res =>{
           this.dataList = res.data.results
         })
       }
     },
+    //操作表格最后合计
+    getSummaries(param){
+      const { columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) =>{
+        if(index === 0){
+          sums[index] = '合计';
+          return;
+        }
+        const values = data.map(item=> Number(item[column.property]));
+        if(!values.every(value => isNaN(value))){
+          sums[index] = values.reduce((prev, curr)=>{
+            const value = Number(curr)
+            if(!isNaN(value)){
+              return prev + curr
+            }else {
+              return  prev
+            }
+          },0)
+        }else {
+          sums[index] =  '-'
+        }
+      });
+      sums[18] = parseFloat((sums[18]/this.dataList.length).toFixed(1))
+      sums[18] += '%'
+      return sums
+    },
   }
 }
 </script>
 
 <style scoped>
-
+  .el-table{
+    overflow:visible !important;
+  }
+  /* /deep/ 为深度操作符，可以穿透到子组件 */
+  /deep/ .el-table {
+    display: flex;
+    flex-direction: column;
+  }
+  /* order默认值为0，只需将表体order置为1即可移到最后，这样合计行就上移到表体上方 */
+  /deep/ .el-table__body-wrapper {
+    order: 1;
+  }
+  /*/ 表格启用 fixed 属性后，样式会错乱，下面2句是补偿修复 /*/
+  /deep/ .el-table__fixed-body-wrapper {
+    top: 96px !important;
+  }
+  /deep/ .el-table__fixed-footer-wrapper {
+    z-index: 0;
+  }
 </style>

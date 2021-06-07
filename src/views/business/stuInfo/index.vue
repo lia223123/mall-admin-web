@@ -27,6 +27,9 @@
           @click="handleExport"
         >导出学生信息</el-button>
       </el-col>
+      <el-col :span="1.5" style="margin-left: 30px; font-size: 15px">
+        <el-tag type="success">共搜索到{{this.dataList.length}}名学员</el-tag>
+      </el-col>
     </el-row>
     <el-table v-loading="loading" :data="dataList" border @selection-change="handleSelectionChange">
       <el-table-column

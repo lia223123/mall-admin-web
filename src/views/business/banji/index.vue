@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div style="display: flex">
-      <div style="margin: 15px 0; width: 700px;display: flex">
+      <div style="margin: 25px 0;height: 40px;  width: 700px;display: flex">
         <el-input placeholder="请输入查询内容" v-model="find" class="input-with-select">
           <el-select v-model="select" slot="prepend" placeholder="请选择" style="width: 120px">
             <el-option v-for="item in this.query" :label="item.name" :value="item.id" :key="item.id"/>
@@ -17,6 +17,8 @@
         保险类型（养老、医疗、失业、工伤、生育、无）<br>
         是否为建档立卡户（是、否）<br>
         健康状态（健康、不健康）<br>
+        性别（男、女）<br>
+        身份证（必须为文本格式的、需要显示所有数字）<br>
       </span>
     </div>
     <el-row>
@@ -62,11 +64,12 @@
             @click="buttonClick(scope.row)"
             :disabled="scope.row.B_type === 3"
           >学员信息导入</el-button><br>
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-wallet"-->
-<!--          >学员信息导出</el-button>-->
+          <el-button
+            size="mini"
+            type="text"
+            @click="stuInfoFind(scope.row)"
+            icon="el-icon-wallet"
+          >班级学员信息查看</el-button>
         </template>
       </el-table-column>
       <el-table-column label="财务登记">
@@ -112,6 +115,13 @@
       </el-table-column>
       <el-table-column label="财务查看" align="center" class-name="small-padding fixed-width" width="140px">
         <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-wallet"
+            @click="handledetailFind(scope.row)">
+            查看报表明细
+          </el-button>
           <el-button
             size="mini"
             type="text"
@@ -174,6 +184,83 @@
         <el-table-column label="招生老师身份证号" align="center" prop="AD_cid"/>
       </el-table>
     </el-dialog>
+<!--班级学生信息查看-->
+    <el-dialog :title="stuTitle" :visible.sync="StuOpen" width="1000px" append-to-body :before-close="handleClose">
+      <el-tag>该班级有{{Students.length}}名学生</el-tag>
+      <el-table :data="Students" border>
+        <el-table-column label="学生姓名" align="center" prop="STU_name"/>
+        <el-table-column label="学员身份证号码" align="center" prop="STU_sf_id"/>
+        <el-table-column label="学员性别" align="center" prop="STU_gender" :formatter="_Sex"/>
+        <el-table-column label="学员电话" align="center" prop="STU_phone"/>
+      </el-table>
+    </el-dialog>
+<!--报表信息查看-->
+    <el-dialog :title="ReimbursementTitle" :visible.sync="ReimbursementOpen" width="1400px" append-to-body :before-close="handleClose">
+      <div style="text-align: center; font-size: 25px;">基本费用明细</div>
+      <el-table :data="SettleAccounts" border :header-cell-style="{
+            'background-color': '#409EFF',
+            'color': '#fff',
+            'font-size': '15px',
+            'font-weight': 'bold'
+        }">
+        <el-table-column label="填写时间" align="center" prop="se_date"/>
+        <el-table-column label="申请类型" align="center" prop="se_types" :formatter="_se_types"/>
+        <el-table-column label="金额" align="center" prop="se_pay"/>
+        <el-table-column label="凭证" align="center" prop="se_pz"/>
+      </el-table>
+      <div style="text-align: center; font-size: 25px; margin-top: 8px">员工费用明细</div>
+      <el-table :data="EmDetails" border :header-cell-style="{
+            'background-color': '#409EFF',
+            'color': '#fff',
+            'font-size': '15px',
+            'font-weight': 'bold'
+        }">
+        <el-table-column label="填写时间" align="center" prop="em_date"/>
+        <el-table-column label="姓名" align="center" prop="em_name"/>
+        <el-table-column label="带班费用" align="center" prop="em_dbCost"/>
+        <el-table-column label="加班费用" align="center" prop="em_jbCost"/>
+        <el-table-column label="出差补贴" align="center" prop="em_cxCost"/>
+        <el-table-column label="身份证号" align="center" prop="em_cid" width="165px"/>
+        <el-table-column label="电话号码" align="center" prop="em_phone"/>
+        <el-table-column label="开户行" align="center" prop="em_bank"/>
+        <el-table-column label="卡号" align="center" prop="em_bankCode" width="180px"/>
+        <el-table-column label="补贴金额" align="center" prop="em_pay"/>
+        <el-table-column label="摘要" align="center" prop="em_text"/>
+      </el-table>
+      <div style="text-align: center; font-size: 25px; margin-top: 8px">开班补贴费用明细</div>
+      <el-table :data="PayDetails" border :header-cell-style="{
+            'background-color': '#409EFF',
+            'color': '#fff',
+            'font-size': '15px',
+            'font-weight': 'bold'
+        }">
+        <el-table-column label="填写时间" align="center" prop="ad_date"/>
+        <el-table-column label="开班老师姓名" align="center" prop="ad_name"/>
+        <el-table-column label="招生人数" align="center" prop="ad_count"/>
+        <el-table-column label="身份证号" align="center" prop="ad_cid" width="165px"/>
+        <el-table-column label="电话号码" align="center" prop="ad_phone"/>
+        <el-table-column label="开户行" align="center" prop="ad_bank"/>
+        <el-table-column label="卡号" align="center" prop="ad_bankCode" width="180px"/>
+        <el-table-column label="补贴金额" align="center" prop="ad_pay"/>
+        <el-table-column label="摘要" align="center" prop="ad_text"/>
+      </el-table>
+      <div style="text-align: center; font-size: 25px; margin-top: 8px">教师费用明细</div>
+      <el-table :data="SubsidyPayment" border :header-cell-style="{
+            'background-color': '#409EFF',
+            'color': '#fff',
+            'font-size': '15px',
+            'font-weight': 'bold'
+        }">
+        <el-table-column label="填写时间" align="center" prop="te_date"/>
+        <el-table-column label="授课教师姓名" align="center" prop="te_name"/>
+        <el-table-column label="身份证号" align="center" prop="te_cid" width="165px"/>
+        <el-table-column label="电话号码" align="center" prop="te_phone"/>
+        <el-table-column label="开户行" align="center" prop="te_bank" />
+        <el-table-column label="卡号" align="center" prop="te_bankCode" width="180px"/>
+        <el-table-column label="提成金额" align="center" prop="te_pay"/>
+        <el-table-column label="摘要" align="center" prop="te_text"/>
+      </el-table>
+    </el-dialog>
 <!--财务详情-->
     <el-dialog title="班级财务详情" :visible.sync="CwOpen" width="1200px" append-to-body :before-close="handleClose">
       <div v-html="html1" style="text-align: center; margin: 0 200px"></div>
@@ -195,23 +282,23 @@
         </el-button>
       </div>
     </el-dialog>
-    <el-dialog title="基本费用登记" :visible.sync="FYOpen" width="600px" append-to-body :before-close="handleClose">
-        <el-form :model="CWform" ref="JBdynamicForm" label-width="60px" class="demo-dynamic">
-          <el-form-item prop="type" label="费用行" v-for="(domain, index) in CWform.detail" :key="domain.key" >
-            <el-row>
-              <el-col :span="8">
-                <el-select v-model="domain.se_types" placeholder="请先选择费用类型">
-                  <el-option v-for="item in CWinfo" :key="item.value" :label="item.name" :value="item.value"/>
-                </el-select>
-              </el-col>
-              <el-col :span="10">
-                <el-input v-model="domain.se_pay" placeholder="请输入金额" type="number"/>
-              </el-col>
-              <el-col :span="4">
-                <el-button @click.prevent="removeDomain(domain)" type="danger">删除</el-button>
-              </el-col>
-            </el-row>
-          </el-form-item>
+    <el-dialog title="基本费用登记" :visible.sync="FYOpen" width="1000px" append-to-body :before-close="handleClose">
+        <el-form :model="CWform" ref="JBdynamicForm" label-width="60px" class="demo-dynamic" :inline="true">
+          <div v-for="(domain, index) in CWform.detail" :key="domain.key" >
+            <el-form-item prop="type" label="费用行" >
+              <el-select v-model="domain.se_types" placeholder="请先选择费用类型">
+                <el-option v-for="item in CWinfo" :key="item.value" :label="item.name" :value="item.value"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="se_pay" label="金额">
+               <el-input v-model="domain.se_pay" placeholder="请输入金额" type="number"/></el-form-item>
+            <el-form-item label="凭证" :prop="'detail.'+ index + '.se_pz'" :rules="{required: true, message: '凭证不能为空', trigger: 'blur'}">
+              <el-input v-model="domain.se_pz" placeholder="请输入凭证" type="textarea"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click.prevent="removeDomain(domain)" type="danger">删除</el-button>
+            </el-form-item>
+          </div>
           <el-form-item>
             <el-button type="primary" @click="CwSubmit">提交</el-button>
             <el-button @click="addDomain">新增费用行</el-button>
@@ -478,7 +565,7 @@
 import {
   ArrayCompare,
   banjiType,
-  ClassStatus, FformatSex, FInsureType, FisNot,
+  ClassStatus, CWInfo, FformatSex, FInsureType, FisNot,
   formatSex,
   Fstu_educations, Fstu_personnel,
   isNot,
@@ -507,7 +594,7 @@ import {addCostDetail} from "../../../api/finance/costDetail";
 import {parseDate} from "echarts/src/util/number";
 import {formatDate} from "../../../utils/date";
 import {addCostDetailing} from "../../../api/finance/costDetailing";
-import {addRelationship} from "../../../api/studentsInfo/relationship";
+import {addRelationship, listRelationship} from "../../../api/studentsInfo/relationship";
 
 let that
 export default {
@@ -592,22 +679,22 @@ export default {
       banji_id : '',
       CWform: {
         detail: [
-          {se_types: '', se_pay: 0, key: Date.now(), se_bj: ''}
+          {se_types: '', se_pay: 0, key: Date.now(), se_bj: '' , se_pz: '', se_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
         ]
       },
       YHform: {
         detail: [
-          {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: '',  key: Date.now()}
+          {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: '',  key: Date.now(), em_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
         ]
       },
       JSform: {
         detail: [
-          {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: ''}
+          {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: '', te_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
         ]
       },
       KBform: {
         detail: [
-          {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: '', key: Date.now()}
+          {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: '', key: Date.now(), ad_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
         ]
       },
       //预览html
@@ -696,7 +783,18 @@ export default {
         {name: '普票',value: 2},
       ],
       //招生老师list
-      ADList: {}
+      ADList: {},
+      //班级学生查看
+      Students: [],
+      StuOpen: false,
+      stuTitle: '',
+      //查看报表明细
+      ReimbursementOpen: false,
+      SettleAccounts: [],
+      EmDetails: [],
+      PayDetails: [],
+      SubsidyPayment: [],
+      ReimbursementTitle: '',
     }
   },
   beforeCreate() {
@@ -810,6 +908,7 @@ export default {
           sc_jb: '',
           sc_cxc: '',
           sc_count: '',
+          sc_lrl: '',
       };
       this.emp = {};
       this.terd = {};
@@ -821,6 +920,7 @@ export default {
         cd_actual_count: 0,
         cd_amm_count: 0,
       };
+
       this.$refs['BanTable'].clearSelection();
     },
     //查询参数重置
@@ -932,7 +1032,7 @@ export default {
         })
       }
     },
-    //更改状态
+    //更改状态与财务确认
     addClassStatus(){
         this.$confirm('确定结束编号为' + this.banji.BClass_code + '的班级？', '结束',{
           confirmButtonText: '确定',
@@ -961,6 +1061,7 @@ export default {
             sc_jb: this.data.overtime,
             sc_cxc: this.data.travel,
             sc_count: this.data.costCount,
+            sc_lrl: (((parseFloat(this.banji.BGov_fee) - (parseFloat(this.data.costCount.toFixed(2)) + parseFloat(this.banji.BManagement_fee) + parseFloat(this.banji.BLiving_fee)))/parseFloat(this.banji.BGov_fee) )*100).toFixed(1),
           }
           addSeCount(this.SeCount).then(res=>{
             Message.success({
@@ -1028,6 +1129,24 @@ export default {
           book = xlsx.utils.book_new();
         xlsx.utils.book_append_sheet(book, sheet, "sheet1");
         xlsx.writeFile(book,`学生信息模板.xls`);
+      })
+    },
+    //班级学生信息查看
+    stuInfoFind(row){
+      let o = {
+        BJ_id: row.id
+      }
+      this.stuTitle = row.BClass_name + '学生信息'
+      listRelationship(o).then(res =>{
+        if(res.data.results.length > 0){
+          this.Students = res.data.results
+          this.StuOpen = true
+        }else {
+          Message.warning({
+            message: '该班级未导入学生',
+            showClose: true,
+          })
+        }
       })
     },
     //导入
@@ -1126,20 +1245,22 @@ export default {
             item.STU_filed_account = FisNot(item.STU_filed_account)
           }
           item.STUBj = this.banji_id
-          if(item.AD_cid !== "") {
+          console.log(item.AD_cid)
+          if(item.AD_cid !== '' && item.AD_cid !== null) {
+            let i = 0
             for(let obj in this.ADList){
               if(this.ADList[obj].AD_cid === item.AD_cid){
                 stu.AD_id = this.ADList[obj].id
                 this.ad_status = 0
-                stus.push(stu)
+                break
               }
-              else {
+              i++
+              if(i > this.ADList.length){
                 Message.warning({
                   message: item.AD_name + '在系统库中不存在，请先录入该老师信息',
                   showClose: true
                 })
                 this.ad_status = 1
-                return
               }
             }
           }
@@ -1148,10 +1269,11 @@ export default {
           stu.STU_gender= item.STU_gender
           stu.STU_phone= item.STU_phone
           stu.BJ_id=this.banji_id
+          stus.push(stu)
           delete item.AD_cid
           delete item.AD_name
         })
-        //可能修改
+        console.log(stus)
           if(that.ad_status === 0 ){
             addRelationship(stus).then(res =>{
               Message.success({
@@ -1195,25 +1317,30 @@ export default {
           se_pay: 0,
           key: Date.now(),
           se_bj: this.banji_id,
+          se_pz: '',
+          se_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')
         }
       ]
       this.FYOpen = true
     },
     CwSubmit(){
-      this.CWform.detail.forEach(item =>{
-        addSettleAccounts(item).then(res =>{
-          Message.success({
-            message: '财务登记成功',
-            showClose: true
+      this.$refs['JBdynamicForm'].validate(valid =>{
+        if(valid){
+          this.CWform.detail.forEach(item =>{
+            addSettleAccounts(item).then(res =>{
+              Message.success({
+                message: '财务登记成功',
+                showClose: true
+              })
+              this.FYOpen = false
+            }).catch(err=>{
+              Message.error({
+                message: err,
+                showClose: true
+              })
+            })
           })
-          this.FYOpen = false
-        }).catch(err=>{
-          console.log(err)
-          Message.error({
-            message: '请输入正确的信息',
-            showClose: true
-          })
-        })
+        }
       })
     },
     resetForm() {
@@ -1223,6 +1350,8 @@ export default {
           se_pay: 0,
           key: Date.now(),
           se_bj: this.banji_id,
+          se_pz: '',
+          se_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')
         }
       ]
     },
@@ -1238,19 +1367,21 @@ export default {
         se_pay: 0,
         key: Date.now(),
         se_bj: this.banji_id,
+        se_pz: '',
+        se_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')
       });
     },
     //员工费用登记
     handleYHDJ(value){
       this.banji_id = value.id
       this.YHform.detail = [
-        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now(), em_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
       this.YHOpen = true
     },
     addDomainYH(){
       this.YHform.detail.push(
-      {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+      {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now(), em_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       )
     },
     removeYHDomain(item){
@@ -1261,7 +1392,7 @@ export default {
     },
     resetYHForm(){
       this.YHform.detail = [
-        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now()}
+        {em_name: '',em_dbCost: 0, em_jbCost: 0, em_cxCost: 0, em_cid: '', em_phone: '', em_bank:'', em_bankCode: '', em_pay: 0, em_text: '', em_s: this.banji_id, key:Date.now(), em_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
     },
     CwYHSubmit(){
@@ -1293,12 +1424,12 @@ export default {
       this.teather = value.BLecturer.split(',')
       console.log(this.teather)
       this.JSform.detail = [
-        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id, te_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
     },
     addDomainJS(){
       this.JSform.detail.push(
-        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id, te_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       )
     },
     removeJSDomain(item){
@@ -1309,7 +1440,7 @@ export default {
     },
     resetJSForm(){
       this.JSform.detail = [
-        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id}
+        {te_name: '', te_cid: '', te_phone: '', te_bank: '', te_bankCode: '', te_pay: 0, te_text: '', key:Date.now(), te_s: this.banji_id, te_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
     },
     CwJSSubmit(){
@@ -1337,13 +1468,13 @@ export default {
     handleKBDJ(value){
       this.banji_id = value.id
       this.KBform.detail = [
-        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now(), ad_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
       this.KBOpen = true
     },
     addDomainKB(){
       this.KBform.detail.push(
-        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now(), ad_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       )
     },
     removeKBDomain(item){
@@ -1354,7 +1485,7 @@ export default {
     },
     resetKBForm(){
       this.KBform.detail = [
-        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now()}
+        {ad_name: '', ad_count: 0, ad_cid: '', ad_phone: '', ad_bank: '', ad_bankCode: '', ad_pay: 0, ad_text: '', ad_s: this.banji_id, key: Date.now(), ad_date: formatDate(new Date(Date.now()),'yyyy-MM-dd')}
       ]
     },
     CwKBSubmit(){
@@ -1572,6 +1703,7 @@ export default {
         this.JSform.detail[index.split(',')[1]].te_bankCode = res.data.results[0].LE_bankCode
         this.JSform.detail[index.split(',')[1]].te_pay = 0
         this.JSform.detail[index.split(',')[1]].key = Date.now()
+        this.JSform.detail[index.split(',')[1]].te_date = formatDate(new Date(Date.now()),'yyyy-MM-dd')
       })
     },
     //申请政府补贴
@@ -1634,14 +1766,61 @@ export default {
         }
       })
     },
+    //刷新政府补贴
     resetFina(){
       this.ZFOpen = false
       this.reset()
+    },
+    //查看明细
+    handledetailFind(row){
+      let o = {
+        em_s: row.id
+      }
+      this.ReimbursementTitle = row.BClass_name + '的报账明细'
+      listEmDetails(o).then(res =>{
+        this.EmDetails = res.data.results
+      }).then(()=>{
+        let s = {
+          ad_s: row.id
+        }
+        listPayDetails(s).then(res =>{
+          this.PayDetails = res.data.results
+        }).then(()=>{
+          let l = {
+            te_s: row.id
+          }
+          listSubsidyPayment(l).then(res =>{
+            this.SubsidyPayment = res.data.results
+          }).then(()=>{
+            let v = {
+              se_bj: row.id
+            }
+            listSettleAccounts(v).then(res =>{
+              this.SettleAccounts = res.data.results
+              this.ReimbursementOpen = true
+            })
+          })
+        })
+      })
+    },
+    //表格渲染
+    _Sex(row){
+      return formatSex(row.STU_gender)
+    },
+    _se_types(row){
+      return CWInfo(row.se_types)
+    },
+    //表格颜色设置
+    tableRowClassName({row, rowIndex}){
+      return 'success-row';
     }
   }
 }
 </script>
 
 <style scoped>
-
+  .el-table .success-row {
+    background: #b60d1b !important;
+    color: #d3dce6;
+  }
 </style>

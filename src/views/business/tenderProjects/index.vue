@@ -703,7 +703,9 @@ export default {
         })
       }else {
         let json = {}
-        json['tp_part'] = this.$store.state.user.department
+        if(this.$store.state.user.department !== '财务'){
+          json['tp_part'] = this.$store.state.user.department
+        }
         json[this.select] = this.find
         listTenderProject(json).then(res =>{
           this.dataList = res.data.results

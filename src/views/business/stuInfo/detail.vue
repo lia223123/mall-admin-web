@@ -398,7 +398,7 @@ export default {
     //获取信息
     getUser(id){
       getStudent(id).then(res =>{
-        console.log(res.data)
+        // console.log(res.data)
         this.user = res.data
         this.user.STU_gender = this.user.STU_gender.toString()
         this.user.STU_filed_account = this.user.STU_filed_account.toString()
